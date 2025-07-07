@@ -1,0 +1,35 @@
+import { Timestamp } from 'typeorm';
+import { Attribute } from '../attribute.entity/attribute.entity';
+import { Tag } from '../tag.entity/tag.entity';
+import { Lot } from '../lot.entity/lot.entity';
+import { Brand } from '../brand.entity/brand.entity';
+import { Location } from '../location.entity/location.entity';
+import { Category } from '../category.entity/category.entity';
+import { ItemVariation } from '../item-variation.entity/item-variation.entity';
+import { Supplier } from '../supplier.entity/supplier.entity';
+export declare class Item {
+    id: number;
+    name: string;
+    sku?: string;
+    slug?: string;
+    barcode?: string;
+    created?: Timestamp;
+    updated?: Timestamp;
+    quantity?: number;
+    purchasePrice?: number;
+    sellingPrice?: number;
+    discountPrice?: number;
+    discount?: number;
+    images?: string[];
+    location?: Location;
+    lot?: Lot;
+    brand?: Brand;
+    supplier?: Supplier;
+    attributes?: Attribute[];
+    category?: Category;
+    tags?: Tag[];
+    relatedItems?: Item[];
+    variations?: ItemVariation[];
+    is_variant?: boolean;
+    is_active: boolean;
+}
