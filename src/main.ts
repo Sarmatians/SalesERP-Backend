@@ -11,7 +11,8 @@ async function bootstrap() {
 
   // Enable CORS 
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: 'https://inventory-management-system-dinajpu-pi.vercel.app',
+    // origin: 'http://localhost:5173',
     credentials: true,
   });
 
