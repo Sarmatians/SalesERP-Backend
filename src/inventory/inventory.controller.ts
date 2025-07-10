@@ -66,9 +66,9 @@ export class InventoryController {
     return this.inventoryService.updateLot(+id, updateLotDto);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
   @Delete('lot/:id')
-  removeLot(@Param('id') id: string): Promise<{ success: boolean; message: string; data: any }> {
+  removeLot(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
     return this.inventoryService.removeLot(+id);
   }
 
@@ -102,7 +102,7 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
   @Delete('supplier/:id')
-  removeSupplier(@Param('id') id: string): Promise<void> {
+  removeSupplier(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
     return this.inventoryService.removeSupplier(+id);
   }
 
@@ -142,7 +142,7 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
   @Delete('location/:id')
-  removeLocation(@Param('id') id: string): Promise<void> {
+  removeLocation(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
     return this.inventoryService.removeLocation(+id);
   }
 
@@ -174,7 +174,7 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
   @Delete('brand/:id')
-  removeBrand(@Param('id') id: string): Promise<void> {
+  removeBrand(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
     return this.inventoryService.removeBrand(+id);
   }
 
@@ -206,7 +206,7 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
   @Delete('tag/:id')
-  removeTag(@Param('id') id: string): Promise<void> {
+  removeTag(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
     return this.inventoryService.removeTag(+id);
   }
 
@@ -237,7 +237,7 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
   @Delete('categories/:id')
-  removeCategory(@Param('id') id: string): Promise<{ success: boolean; message: string; data: any }> {
+  removeCategory(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
     return this.inventoryService.removeCategory(+id);
   }
 
@@ -271,7 +271,7 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
   @Delete('attributes/:id')
-  removeAttribute(@Param('id') id: string): Promise<void> {
+  removeAttribute(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
     return this.inventoryService.removeAttribute(+id);
   }
 
@@ -302,7 +302,7 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
   @Delete('attribute-items/:id')
-  removeAttributeItem(@Param('id') id: string): Promise<void> {
+  removeAttributeItem(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
     return this.inventoryService.removeAttributeItem(+id);
   }
 
@@ -334,7 +334,7 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
   @Delete('items/:id')
-  removeItem(@Param('id') id: string): Promise<void> {
+  removeItem(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
     return this.inventoryService.removeItem(+id);
   }
 
@@ -365,7 +365,7 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
   @Delete('item-variations/:id')
-  removeItemVariation(@Param('id') id: string): Promise<void> {
+  removeItemVariation(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
     return this.inventoryService.removeItemVariation(+id);
   }
 
