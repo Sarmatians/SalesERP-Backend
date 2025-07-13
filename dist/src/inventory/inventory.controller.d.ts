@@ -60,7 +60,6 @@ export declare class InventoryController {
     removeLot(id: string): Promise<{
         success: boolean;
         message: string;
-        data: any;
     }>;
     findAllSupplier(query: QueryInventoryDto): Promise<{
         success: boolean;
@@ -82,7 +81,10 @@ export declare class InventoryController {
         message: string;
         data: Supplier;
     }>;
-    removeSupplier(id: string): Promise<void>;
+    removeSupplier(id: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
     findAllSupplierNoPagination(search?: string): Promise<Supplier[]>;
     findAllLocation(query: QueryInventoryDto): Promise<{
         success: boolean;
@@ -100,7 +102,10 @@ export declare class InventoryController {
     findOneLocation(id: string): Promise<Location>;
     createLocation(createLocationDto: CreateLocationDto): Promise<Location>;
     updateLocation(id: string, UpdateLocationDto: UpdateLocationDto): Promise<void>;
-    removeLocation(id: string): Promise<void>;
+    removeLocation(id: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
     findAllBrand(query: QueryInventoryDto): Promise<{
         success: boolean;
         message: string;
@@ -117,7 +122,10 @@ export declare class InventoryController {
     findOneBrand(id: string): Promise<Brand>;
     createBrand(createBrandDto: CreateBrandDto): Promise<Brand>;
     updateBrand(id: string, UpdateBrandDto: UpdateBrandDto): Promise<void>;
-    removeBrand(id: string): Promise<void>;
+    removeBrand(id: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
     findAllTag(query: QueryInventoryDto): Promise<{
         success: boolean;
         message: string;
@@ -134,7 +142,10 @@ export declare class InventoryController {
     findOneTag(id: string): Promise<Tag>;
     createTag(createTagDto: CreateTagDto): Promise<Tag>;
     updateTag(id: string, updateTagDto: UpdateTagDto): Promise<void>;
-    removeTag(id: string): Promise<void>;
+    removeTag(id: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
     findAllCategories(query: QueryInventoryDto): Promise<{
         success: boolean;
         message: string;
@@ -156,7 +167,6 @@ export declare class InventoryController {
     removeCategory(id: string): Promise<{
         success: boolean;
         message: string;
-        data: any;
     }>;
     findAllAttributes(query: QueryInventoryDto): Promise<{
         success: boolean;
@@ -174,7 +184,10 @@ export declare class InventoryController {
     findOneAttribute(id: string): Promise<Attribute>;
     createAttribute(createAttributeDto: CreateAttributeDto): Promise<Attribute>;
     updateAttribute(id: string, updateAttributeDto: UpdateAttributeDto): Promise<void>;
-    removeAttribute(id: string): Promise<void>;
+    removeAttribute(id: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
     findAllAttributeItems(query: QueryInventoryDto): Promise<{
         success: boolean;
         message: string;
@@ -191,7 +204,10 @@ export declare class InventoryController {
     findOneAttributeItem(id: string): Promise<AttributeItem>;
     createAttributeItem(createAttributeItemDto: CreateAttributeItemDto): Promise<AttributeItem>;
     updateAttributeItem(id: string, updateAttributeItem: UpdateAttributeItemDto): Promise<void>;
-    removeAttributeItem(id: string): Promise<void>;
+    removeAttributeItem(id: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
     findAllItems(query: QueryInventoryDto): Promise<{
         success: boolean;
         message: string;
@@ -208,7 +224,10 @@ export declare class InventoryController {
     findOneItem(id: string): Promise<Item>;
     createItem(createItemDto: CreateItemDto): Promise<Item>;
     updateItem(id: string, updateItemDto: UpdateItemDto): Promise<void>;
-    removeItem(id: string): Promise<void>;
+    removeItem(id: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
     findAllItemVariations(query: QueryInventoryDto): Promise<{
         success: boolean;
         message: string;
@@ -225,5 +244,8 @@ export declare class InventoryController {
     findOneItemVariation(id: string): Promise<ItemVariation>;
     createItemVariation(dto: CreateItemVariationDto): Promise<ItemVariation>;
     updateItemVariation(id: string, dto: UpdateItemVariationDto): Promise<void>;
-    removeItemVariation(id: string): Promise<void>;
+    removeItemVariation(id: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
 }

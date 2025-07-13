@@ -19,4 +19,5 @@ export declare class UpdateItemDto {
     relatedItemIds?: number[];
     is_variant?: boolean;
     is_active?: boolean;
+    add_date?: Date;
 }

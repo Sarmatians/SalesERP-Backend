@@ -46,6 +46,19 @@ let InventoryService = class InventoryService {
             data,
         };
     }
+    handleDeleteError(error, entityName) {
+        if (error instanceof typeorm_2.QueryFailedError) {
+            const errMsg = error.driverError?.detail || error.message;
+            return {
+                success: false,
+                message: `Cannot delete ${entityName}. It may be in use or related to another entity. Details: ${errMsg}`,
+            };
+        }
+        return {
+            success: false,
+            message: `Failed to delete ${entityName}: ${error.message}`,
+        };
+    }
     async findAllLots(query) {
         const { page = '1', limit = '10' } = query;
         const take = parseInt(limit);
@@ -114,11 +127,11 @@ let InventoryService = class InventoryService {
         try {
             const result = await this.lotRepository.delete(id);
             if (!result.affected)
-                throw new Error('Lot not found');
-            return this.response(true, `Lot with ID ${id} deleted successfully.`);
+                return this.response(false, 'Lot not found');
+            return this.response(true, 'Lot deleted successfully');
         }
         catch (error) {
-            return this.response(false, `Failed to delete lot: ${error.message}`);
+            return this.handleDeleteError(error, 'Lot');
         }
     }
     async findAllSuppliers(query) {
@@ -200,7 +213,15 @@ let InventoryService = class InventoryService {
         };
     }
     async removeSupplier(id) {
-        await this.supplierRepository.delete(id);
+        try {
+            const result = await this.supplierRepository.delete(id);
+            if (!result.affected)
+                return this.response(false, 'Supplier not found');
+            return this.response(true, 'Supplier deleted successfully');
+        }
+        catch (error) {
+            return this.handleDeleteError(error, 'Supplier');
+        }
     }
     async findAllSuppliersNoPagination(search) {
         const where = search
@@ -249,7 +270,15 @@ let InventoryService = class InventoryService {
         await this.locationRepository.update(id, updateData);
     }
     async removeLocation(id) {
-        await this.locationRepository.delete(id);
+        try {
+            const result = await this.locationRepository.delete(id);
+            if (!result.affected)
+                return this.response(false, 'Location not found');
+            return this.response(true, 'Location deleted successfully');
+        }
+        catch (error) {
+            return this.handleDeleteError(error, 'Location');
+        }
     }
     async findAllBrand(query) {
         const { page = '1', limit = '10', search } = query;
@@ -289,7 +318,15 @@ let InventoryService = class InventoryService {
         await this.brandRepository.update(id, updateData);
     }
     async removeBrand(id) {
-        await this.brandRepository.delete(id);
+        try {
+            const result = await this.brandRepository.delete(id);
+            if (!result.affected)
+                return this.response(false, 'Brand not found');
+            return this.response(true, 'Brand deleted successfully');
+        }
+        catch (error) {
+            return this.handleDeleteError(error, 'Brand');
+        }
     }
     async findAllTag(query) {
         const { page = '1', limit = '10', search } = query;
@@ -329,7 +366,15 @@ let InventoryService = class InventoryService {
         await this.tagRepository.update(id, updateData);
     }
     async removeTag(id) {
-        await this.tagRepository.delete(id);
+        try {
+            const result = await this.tagRepository.delete(id);
+            if (!result.affected)
+                return this.response(false, 'Tag not found');
+            return this.response(true, 'Tag deleted successfully');
+        }
+        catch (error) {
+            return this.handleDeleteError(error, 'Tag');
+        }
     }
     async findAllCategories(query) {
         const { page = '1', limit = '50', search } = query;
@@ -413,13 +458,12 @@ let InventoryService = class InventoryService {
     async removeCategory(id) {
         try {
             const result = await this.categoryRepository.delete(id);
-            if (result.affected === 0) {
-                return this.response(false, 'Category not found', null);
-            }
-            return this.response(true, 'Category removed successfully', null);
+            if (!result.affected)
+                return this.response(false, 'Category not found');
+            return this.response(true, 'Category deleted successfully');
         }
-        catch {
-            return this.response(false, 'Failed to remove category', null);
+        catch (error) {
+            return this.handleDeleteError(error, 'Category');
         }
     }
     async findAllAttributes(query) {
@@ -462,7 +506,15 @@ let InventoryService = class InventoryService {
         await this.attributeRepository.update(id, updateData);
     }
     async removeAttribute(id) {
-        await this.attributeRepository.delete(id);
+        try {
+            const result = await this.attributeRepository.delete(id);
+            if (!result.affected)
+                return this.response(false, 'Attribute not found');
+            return this.response(true, 'Attribute deleted successfully');
+        }
+        catch (error) {
+            return this.handleDeleteError(error, 'Attribute');
+        }
     }
     async findAllAttributeItems(query) {
         const { page = '1', limit = '10' } = query;
@@ -515,7 +567,15 @@ let InventoryService = class InventoryService {
         });
     }
     async removeAttributeItem(id) {
-        await this.attributeItemRepository.delete(id);
+        try {
+            const result = await this.attributeItemRepository.delete(id);
+            if (!result.affected)
+                return this.response(false, 'Attribute Item not found');
+            return this.response(true, 'Attribute Item deleted successfully');
+        }
+        catch (error) {
+            return this.handleDeleteError(error, 'Attribute Item');
+        }
     }
     async findAllItems(query) {
         const { page = '1', limit = '10', search } = query;
@@ -594,6 +654,7 @@ let InventoryService = class InventoryService {
         item.discount = createItemDto.discount;
         item.images = createItemDto.images;
         item.is_variant = createItemDto.is_variant ?? false;
+        item.add_date = createItemDto.add_date ?? null;
         if (createItemDto.locationId) {
             const location = await this.locationRepository.findOne({ where: { id: createItemDto.locationId } });
             if (!location)
@@ -744,7 +805,15 @@ let InventoryService = class InventoryService {
         }
     }
     async removeItem(id) {
-        await this.itemRepository.delete(id);
+        try {
+            const result = await this.itemRepository.delete(id);
+            if (!result.affected)
+                return this.response(false, 'Item not found');
+            return this.response(true, 'Item deleted successfully');
+        }
+        catch (error) {
+            return this.handleDeleteError(error, 'Item');
+        }
     }
     async findAllItemVariations(query) {
         const { page = '1', limit = '10', search } = query;
@@ -864,7 +933,15 @@ let InventoryService = class InventoryService {
         }
     }
     async removeItemVariation(id) {
-        await this.itemVariationRepository.delete(id);
+        try {
+            const result = await this.itemVariationRepository.delete(id);
+            if (!result.affected)
+                return this.response(false, 'Item Variation not found');
+            return this.response(true, 'Item Variation deleted successfully');
+        }
+        catch (error) {
+            return this.handleDeleteError(error, 'Item Variation');
+        }
     }
 };
 exports.InventoryService = InventoryService;

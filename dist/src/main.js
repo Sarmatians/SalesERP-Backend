@@ -8,7 +8,10 @@ const http_exception_filter_1 = require("./utility/filter/http-exception.filter"
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.enableCors({
-        origin: 'http://localhost:5173',
+        origin: [
+            'http://localhost:5173',
+            'https://inventory-management-system-dinajpu-pi.vercel.app',
+        ],
         credentials: true,
     });
     const config = new swagger_1.DocumentBuilder()

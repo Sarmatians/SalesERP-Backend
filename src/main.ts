@@ -5,14 +5,15 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { GlobalHttpExceptionFilter } from './utility/filter/http-exception.filter';
 
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Enable CORS 
   app.enableCors({
-    origin: 'https://inventory-management-system-dinajpu-pi.vercel.app',
-    // origin: 'http://localhost:5173',
+    origin: [
+    'http://localhost:5173',
+    'https://inventory-management-system-dinajpu-pi.vercel.app',
+    ],
     credentials: true,
   });
 

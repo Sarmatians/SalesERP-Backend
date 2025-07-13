@@ -2,7 +2,7 @@
 
 import { Injectable, NotFoundException  } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike  } from 'typeorm';
+import { Repository, ILike, QueryFailedError   } from 'typeorm';
 import { Lot } from './entities/lot.entity/lot.entity';
 import { CreateLotDto } from './dto/create-lot.dto';
 import { UpdateLotDto } from './dto/update-lot.dto';
@@ -63,12 +63,28 @@ export class InventoryService {
 
 
     private response(success: boolean, message: string, data: any = null) {
-    return {
-      success,
-      message,
-      data,
-    };
-  }
+      return {
+        success,
+        message,
+        data,
+      };
+    }
+
+    // Generic ERROR Handler
+    private handleDeleteError(error: any, entityName: string) {
+      if (error instanceof QueryFailedError) {
+        const errMsg = (error as any).driverError?.detail || error.message;
+        return {
+          success: false,
+          message: `Cannot delete ${entityName}. It may be in use or related to another entity. Details: ${errMsg}`,
+        };
+      }
+      return {
+        success: false,
+        message: `Failed to delete ${entityName}: ${error.message}`,
+      };
+    }
+  
 
   // #################### Lot methods ####################
 
@@ -153,10 +169,10 @@ export class InventoryService {
     async removeLot(id: number) {
       try {
         const result = await this.lotRepository.delete(id);
-        if (!result.affected) throw new Error('Lot not found');
-        return this.response(true, `Lot with ID ${id} deleted successfully.`);
+        if (!result.affected) return this.response(false, 'Lot not found');
+        return this.response(true, 'Lot deleted successfully');
       } catch (error) {
-        return this.response(false, `Failed to delete lot: ${error.message}`);
+        return this.handleDeleteError(error, 'Lot');
       }
     }
 
@@ -255,8 +271,14 @@ export class InventoryService {
     }
 
     // Remove Supplier
-    async removeSupplier(id: number): Promise<void> {
-      await this.supplierRepository.delete(id);
+    async removeSupplier(id: number) {
+      try {
+        const result = await this.supplierRepository.delete(id);
+        if (!result.affected) return this.response(false, 'Supplier not found');
+        return this.response(true, 'Supplier deleted successfully');
+      } catch (error) {
+        return this.handleDeleteError(error, 'Supplier');
+      }
     }
 
     // All Suppliers without Pagination
@@ -321,8 +343,14 @@ export class InventoryService {
     }
 
     // Remove Location
-    async removeLocation(id: number): Promise<void> {
-      await this.locationRepository.delete(id);
+    async removeLocation(id: number) {
+      try {
+        const result = await this.locationRepository.delete(id);
+        if (!result.affected) return this.response(false, 'Location not found');
+        return this.response(true, 'Location deleted successfully');
+      } catch (error) {
+        return this.handleDeleteError(error, 'Location');
+      }
     }
 
     //  #################### Brand methods ####################
@@ -374,8 +402,14 @@ export class InventoryService {
     }
 
     // Remove Brand
-    async removeBrand(id: number): Promise<void> {
-      await this.brandRepository.delete(id);
+    async removeBrand(id: number) {
+      try {
+        const result = await this.brandRepository.delete(id);
+        if (!result.affected) return this.response(false, 'Brand not found');
+        return this.response(true, 'Brand deleted successfully');
+      } catch (error) {
+        return this.handleDeleteError(error, 'Brand');
+      }
     }
 
 
@@ -429,8 +463,14 @@ export class InventoryService {
     }
 
     // Remove Tag
-    async removeTag(id: number): Promise<void> {
-      await this.tagRepository.delete(id);
+    async removeTag(id: number) {
+      try {
+        const result = await this.tagRepository.delete(id);
+        if (!result.affected) return this.response(false, 'Tag not found');
+        return this.response(true, 'Tag deleted successfully');
+      } catch (error) {
+        return this.handleDeleteError(error, 'Tag');
+      }
     }
 
     //  #################### Category methods ####################
@@ -528,20 +568,15 @@ export class InventoryService {
     }
   
     // Remove Category
-    async removeCategory(id: number): Promise<{ success: boolean; message: string; data: any }> {
+    async removeCategory(id: number) {
       try {
         const result = await this.categoryRepository.delete(id);
-        
-        if (result.affected === 0) {
-          return this.response(false, 'Category not found', null);
-        }
-        
-        return this.response(true, 'Category removed successfully', null);
-      } catch {
-        return this.response(false, 'Failed to remove category', null);
+        if (!result.affected) return this.response(false, 'Category not found');
+        return this.response(true, 'Category deleted successfully');
+      } catch (error) {
+        return this.handleDeleteError(error, 'Category');
       }
     }
-  
     // #################### Attribute methods ####################
 
     // Find All Attributes with Pagination
@@ -594,8 +629,14 @@ export class InventoryService {
     }
   
     // Remove Attribute
-    async removeAttribute(id: number): Promise<void> {
-      await this.attributeRepository.delete(id);
+    async removeAttribute(id: number) {
+      try {
+        const result = await this.attributeRepository.delete(id);
+        if (!result.affected) return this.response(false, 'Attribute not found');
+        return this.response(true, 'Attribute deleted successfully');
+      } catch (error) {
+        return this.handleDeleteError(error, 'Attribute');
+      }
     }
   
     // #################### AttributeItem methods ####################
@@ -660,10 +701,15 @@ export class InventoryService {
       });
     }
   
-    async removeAttributeItem(id: number): Promise<void> {
-      await this.attributeItemRepository.delete(id);
+    async removeAttributeItem(id: number) {
+      try {
+        const result = await this.attributeItemRepository.delete(id);
+        if (!result.affected) return this.response(false, 'Attribute Item not found');
+        return this.response(true, 'Attribute Item deleted successfully');
+      } catch (error) {
+        return this.handleDeleteError(error, 'Attribute Item');
+      }
     }
-  
     
 
   // ####################  ITEM  ####################
@@ -756,6 +802,8 @@ export class InventoryService {
     item.discount = createItemDto.discount;
     item.images = createItemDto.images;
     item.is_variant = createItemDto.is_variant ?? false;
+    item.add_date = createItemDto.add_date ?? null;
+
 
     // Relations
     if (createItemDto.locationId) {
@@ -932,8 +980,14 @@ export class InventoryService {
   }
 
   // Delete Item
-  async removeItem(id: number): Promise<void> {
-    await this.itemRepository.delete(id);
+  async removeItem(id: number) {
+    try {
+      const result = await this.itemRepository.delete(id);
+      if (!result.affected) return this.response(false, 'Item not found');
+      return this.response(true, 'Item deleted successfully');
+    } catch (error) {
+      return this.handleDeleteError(error, 'Item');
+    }
   }
 
   // ####################  ItemVariation methods ####################
@@ -1076,9 +1130,26 @@ export class InventoryService {
     }
   }
 
-// Delete Variations
-async removeItemVariation(id: number): Promise<void> {
-      await this.itemVariationRepository.delete(id);
-}
+  // Delete Variations
+  async removeItemVariation(id: number) {
+    try {
+      const result = await this.itemVariationRepository.delete(id);
+      if (!result.affected) return this.response(false, 'Item Variation not found');
+      return this.response(true, 'Item Variation deleted successfully');
+    } catch (error) {
+      return this.handleDeleteError(error, 'Item Variation');
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
 
 }

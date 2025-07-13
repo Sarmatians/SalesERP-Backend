@@ -18,4 +18,5 @@ export declare class CreateItemDto {
     tagIds?: number[];
     relatedItemIds?: number[];
     is_variant?: boolean;
+    add_date?: Date;
 }
