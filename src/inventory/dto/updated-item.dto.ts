@@ -89,4 +89,9 @@ export class UpdateItemDto {
   @IsOptional()
   @IsBoolean()
   is_active?: boolean;
+
+  @IsOptional()
+  @Type(() => Date)
+  add_date?: Date;
+  
 }

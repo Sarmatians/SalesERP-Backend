@@ -802,6 +802,8 @@ export class InventoryService {
     item.discount = createItemDto.discount;
     item.images = createItemDto.images;
     item.is_variant = createItemDto.is_variant ?? false;
+    item.add_date = createItemDto.add_date ?? null;
+
 
     // Relations
     if (createItemDto.locationId) {
