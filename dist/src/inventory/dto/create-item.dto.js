@@ -119,4 +119,9 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], CreateItemDto.prototype, "is_variant", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Type)(() => Date),
+    __metadata("design:type", Date)
+], CreateItemDto.prototype, "add_date", void 0);
 //# sourceMappingURL=create-item.dto.js.map

@@ -85,4 +85,9 @@ export class CreateItemDto {
   @IsOptional()
   @IsBoolean()
   is_variant?: boolean = false;
+  
+  @IsOptional()
+  @Type(() => Date)
+  add_date?: Date;
+
 }

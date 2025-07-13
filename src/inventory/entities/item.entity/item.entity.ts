@@ -94,6 +94,9 @@ export class Item {
   @Column({ default: true })
   is_active: boolean;
 
+  @Column({ type: 'timestamp', nullable: true })
+  add_date?: Date;
+
   // @BeforeInsert()
   // @BeforeUpdate()
   // generateSlugAndBarcode() {
