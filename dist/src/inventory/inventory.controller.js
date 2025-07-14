@@ -55,8 +55,15 @@ let InventoryController = class InventoryController {
     updateLot(id, updateLotDto) {
         return this.inventoryService.updateLot(+id, updateLotDto);
     }
-    removeLot(id) {
-        return this.inventoryService.removeLot(+id);
+    async removeLot(id, res) {
+        const result = await this.inventoryService.removeLot(+id);
+        if (!result.success && result.message.includes('not found')) {
+            return res.status(404).json(result);
+        }
+        if (!result.success && result.message.includes('in use')) {
+            return res.status(206).json(result);
+        }
+        return res.status(200).json(result);
     }
     findAllSupplier(query) {
         return this.inventoryService.findAllSuppliers(query);
@@ -70,8 +77,15 @@ let InventoryController = class InventoryController {
     updateSupplier(id, updateSupplierDto) {
         return this.inventoryService.updateSupplier(+id, updateSupplierDto);
     }
-    removeSupplier(id) {
-        return this.inventoryService.removeSupplier(+id);
+    async removeSupplier(id, res) {
+        const result = await this.inventoryService.removeSupplier(+id);
+        if (!result.success && result.message.includes('not found')) {
+            return res.status(404).json(result);
+        }
+        if (!result.success && result.message.includes('in use')) {
+            return res.status(206).json(result);
+        }
+        return res.status(200).json(result);
     }
     async findAllSupplierNoPagination(search) {
         return this.inventoryService.findAllSuppliersNoPagination(search);
@@ -88,8 +102,15 @@ let InventoryController = class InventoryController {
     updateLocation(id, UpdateLocationDto) {
         return this.inventoryService.updateLocation(+id, UpdateLocationDto);
     }
-    removeLocation(id) {
-        return this.inventoryService.removeLocation(+id);
+    async removeLocation(id, res) {
+        const result = await this.inventoryService.removeLocation(+id);
+        if (!result.success && result.message.includes('not found')) {
+            return res.status(404).json(result);
+        }
+        if (!result.success && result.message.includes('in use')) {
+            return res.status(206).json(result);
+        }
+        return res.status(200).json(result);
     }
     findAllBrand(query) {
         return this.inventoryService.findAllBrand(query);
@@ -103,8 +124,15 @@ let InventoryController = class InventoryController {
     updateBrand(id, UpdateBrandDto) {
         return this.inventoryService.updateBrand(+id, UpdateBrandDto);
     }
-    removeBrand(id) {
-        return this.inventoryService.removeBrand(+id);
+    async removeBrand(id, res) {
+        const result = await this.inventoryService.removeBrand(+id);
+        if (!result.success && result.message.includes('not found')) {
+            return res.status(404).json(result);
+        }
+        if (!result.success && result.message.includes('in use')) {
+            return res.status(206).json(result);
+        }
+        return res.status(200).json(result);
     }
     findAllTag(query) {
         return this.inventoryService.findAllTag(query);
@@ -118,8 +146,15 @@ let InventoryController = class InventoryController {
     updateTag(id, updateTagDto) {
         return this.inventoryService.updateTag(+id, updateTagDto);
     }
-    removeTag(id) {
-        return this.inventoryService.removeTag(+id);
+    async removeTag(id, res) {
+        const result = await this.inventoryService.removeTag(+id);
+        if (!result.success && result.message.includes('not found')) {
+            return res.status(404).json(result);
+        }
+        if (!result.success && result.message.includes('in use')) {
+            return res.status(206).json(result);
+        }
+        return res.status(200).json(result);
     }
     findAllCategories(query) {
         return this.inventoryService.findAllCategories(query);
@@ -133,8 +168,15 @@ let InventoryController = class InventoryController {
     updateCategory(id, updateCategoryDto) {
         return this.inventoryService.updateCategory(+id, updateCategoryDto);
     }
-    removeCategory(id) {
-        return this.inventoryService.removeCategory(+id);
+    async removeCategory(id, res) {
+        const result = await this.inventoryService.removeCategory(+id);
+        if (!result.success && result.message.includes('not found')) {
+            return res.status(404).json(result);
+        }
+        if (!result.success && result.message.includes('in use')) {
+            return res.status(206).json(result);
+        }
+        return res.status(200).json(result);
     }
     findAllAttributes(query) {
         return this.inventoryService.findAllAttributes(query);
@@ -148,8 +190,15 @@ let InventoryController = class InventoryController {
     updateAttribute(id, updateAttributeDto) {
         return this.inventoryService.updateAttribute(+id, updateAttributeDto);
     }
-    removeAttribute(id) {
-        return this.inventoryService.removeAttribute(+id);
+    async removeAttribute(id, res) {
+        const result = await this.inventoryService.removeAttribute(+id);
+        if (!result.success && result.message.includes('not found')) {
+            return res.status(404).json(result);
+        }
+        if (!result.success && result.message.includes('in use')) {
+            return res.status(206).json(result);
+        }
+        return res.status(200).json(result);
     }
     findAllAttributeItems(query) {
         return this.inventoryService.findAllAttributeItems(query);
@@ -163,8 +212,15 @@ let InventoryController = class InventoryController {
     updateAttributeItem(id, updateAttributeItem) {
         return this.inventoryService.updateAttributeItem(+id, updateAttributeItem);
     }
-    removeAttributeItem(id) {
-        return this.inventoryService.removeAttributeItem(+id);
+    async removeAttributeItem(id, res) {
+        const result = await this.inventoryService.removeAttributeItem(+id);
+        if (!result.success && result.message.includes('not found')) {
+            return res.status(404).json(result);
+        }
+        if (!result.success && result.message.includes('in use')) {
+            return res.status(206).json(result);
+        }
+        return res.status(200).json(result);
     }
     findAllItems(query) {
         return this.inventoryService.findAllItems(query);
@@ -178,8 +234,15 @@ let InventoryController = class InventoryController {
     updateItem(id, updateItemDto) {
         return this.inventoryService.updateItem(+id, updateItemDto);
     }
-    removeItem(id) {
-        return this.inventoryService.removeItem(+id);
+    async removeItem(id, res) {
+        const result = await this.inventoryService.removeItem(+id);
+        if (!result.success && result.message.includes('not found')) {
+            return res.status(404).json(result);
+        }
+        if (!result.success && result.message.includes('in use')) {
+            return res.status(206).json(result);
+        }
+        return res.status(200).json(result);
     }
     findAllItemVariations(query) {
         return this.inventoryService.findAllItemVariations(query);
@@ -193,8 +256,15 @@ let InventoryController = class InventoryController {
     updateItemVariation(id, dto) {
         return this.inventoryService.updateItemVariation(+id, dto);
     }
-    removeItemVariation(id) {
-        return this.inventoryService.removeItemVariation(+id);
+    async removeItemVariation(id, res) {
+        const result = await this.inventoryService.removeItemVariation(+id);
+        if (!result.success && result.message.includes('not found')) {
+            return res.status(404).json(result);
+        }
+        if (!result.success && result.message.includes('in use')) {
+            return res.status(206).json(result);
+        }
+        return res.status(200).json(result);
     }
 };
 exports.InventoryController = InventoryController;
@@ -235,8 +305,9 @@ __decorate([
     (0, common_1.UseGuards)(authentication_guard_1.AuthenticationGuard, (0, authorization_guard_1.AuthorizedGuard)([user_role_enum_1.Roles.ADMIN])),
     (0, common_1.Delete)('lot/:id'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "removeLot", null);
 __decorate([
@@ -276,8 +347,9 @@ __decorate([
     (0, common_1.UseGuards)(authentication_guard_1.AuthenticationGuard, (0, authorization_guard_1.AuthorizedGuard)([user_role_enum_1.Roles.ADMIN])),
     (0, common_1.Delete)('supplier/:id'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "removeSupplier", null);
 __decorate([
@@ -325,8 +397,9 @@ __decorate([
     (0, common_1.UseGuards)(authentication_guard_1.AuthenticationGuard, (0, authorization_guard_1.AuthorizedGuard)([user_role_enum_1.Roles.ADMIN])),
     (0, common_1.Delete)('location/:id'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "removeLocation", null);
 __decorate([
@@ -366,8 +439,9 @@ __decorate([
     (0, common_1.UseGuards)(authentication_guard_1.AuthenticationGuard, (0, authorization_guard_1.AuthorizedGuard)([user_role_enum_1.Roles.ADMIN])),
     (0, common_1.Delete)('brand/:id'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "removeBrand", null);
 __decorate([
@@ -407,8 +481,9 @@ __decorate([
     (0, common_1.UseGuards)(authentication_guard_1.AuthenticationGuard, (0, authorization_guard_1.AuthorizedGuard)([user_role_enum_1.Roles.ADMIN])),
     (0, common_1.Delete)('tag/:id'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "removeTag", null);
 __decorate([
@@ -448,8 +523,9 @@ __decorate([
     (0, common_1.UseGuards)(authentication_guard_1.AuthenticationGuard, (0, authorization_guard_1.AuthorizedGuard)([user_role_enum_1.Roles.ADMIN])),
     (0, common_1.Delete)('categories/:id'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "removeCategory", null);
 __decorate([
@@ -489,8 +565,9 @@ __decorate([
     (0, common_1.UseGuards)(authentication_guard_1.AuthenticationGuard, (0, authorization_guard_1.AuthorizedGuard)([user_role_enum_1.Roles.ADMIN])),
     (0, common_1.Delete)('attributes/:id'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "removeAttribute", null);
 __decorate([
@@ -530,8 +607,9 @@ __decorate([
     (0, common_1.UseGuards)(authentication_guard_1.AuthenticationGuard, (0, authorization_guard_1.AuthorizedGuard)([user_role_enum_1.Roles.ADMIN])),
     (0, common_1.Delete)('attribute-items/:id'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "removeAttributeItem", null);
 __decorate([
@@ -571,8 +649,9 @@ __decorate([
     (0, common_1.UseGuards)(authentication_guard_1.AuthenticationGuard, (0, authorization_guard_1.AuthorizedGuard)([user_role_enum_1.Roles.ADMIN])),
     (0, common_1.Delete)('items/:id'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "removeItem", null);
 __decorate([
@@ -612,8 +691,9 @@ __decorate([
     (0, common_1.UseGuards)(authentication_guard_1.AuthenticationGuard, (0, authorization_guard_1.AuthorizedGuard)([user_role_enum_1.Roles.ADMIN])),
     (0, common_1.Delete)('item-variations/:id'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "removeItemVariation", null);
 exports.InventoryController = InventoryController = __decorate([

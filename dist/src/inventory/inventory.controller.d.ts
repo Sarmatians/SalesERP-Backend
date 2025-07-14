@@ -1,3 +1,4 @@
+import { Response } from 'express';
 import { InventoryService } from './inventory.service';
 import { Lot } from './entities/lot.entity/lot.entity';
 import { CreateLotDto } from './dto/create-lot.dto';
@@ -57,10 +58,7 @@ export declare class InventoryController {
         message: string;
         data: any;
     }>;
-    removeLot(id: string): Promise<{
-        success: boolean;
-        message: string;
-    }>;
+    removeLot(id: string, res: Response): Promise<Response<any, Record<string, any>>>;
     findAllSupplier(query: QueryInventoryDto): Promise<{
         success: boolean;
         message: string;
@@ -81,10 +79,7 @@ export declare class InventoryController {
         message: string;
         data: Supplier;
     }>;
-    removeSupplier(id: string): Promise<{
-        success: boolean;
-        message: string;
-    }>;
+    removeSupplier(id: string, res: Response): Promise<Response<any, Record<string, any>>>;
     findAllSupplierNoPagination(search?: string): Promise<Supplier[]>;
     findAllLocation(query: QueryInventoryDto): Promise<{
         success: boolean;
@@ -102,10 +97,7 @@ export declare class InventoryController {
     findOneLocation(id: string): Promise<Location>;
     createLocation(createLocationDto: CreateLocationDto): Promise<Location>;
     updateLocation(id: string, UpdateLocationDto: UpdateLocationDto): Promise<void>;
-    removeLocation(id: string): Promise<{
-        success: boolean;
-        message: string;
-    }>;
+    removeLocation(id: string, res: Response): Promise<Response<any, Record<string, any>>>;
     findAllBrand(query: QueryInventoryDto): Promise<{
         success: boolean;
         message: string;
@@ -122,10 +114,7 @@ export declare class InventoryController {
     findOneBrand(id: string): Promise<Brand>;
     createBrand(createBrandDto: CreateBrandDto): Promise<Brand>;
     updateBrand(id: string, UpdateBrandDto: UpdateBrandDto): Promise<void>;
-    removeBrand(id: string): Promise<{
-        success: boolean;
-        message: string;
-    }>;
+    removeBrand(id: string, res: Response): Promise<Response<any, Record<string, any>>>;
     findAllTag(query: QueryInventoryDto): Promise<{
         success: boolean;
         message: string;
@@ -142,10 +131,7 @@ export declare class InventoryController {
     findOneTag(id: string): Promise<Tag>;
     createTag(createTagDto: CreateTagDto): Promise<Tag>;
     updateTag(id: string, updateTagDto: UpdateTagDto): Promise<void>;
-    removeTag(id: string): Promise<{
-        success: boolean;
-        message: string;
-    }>;
+    removeTag(id: string, res: Response): Promise<Response<any, Record<string, any>>>;
     findAllCategories(query: QueryInventoryDto): Promise<{
         success: boolean;
         message: string;
@@ -164,10 +150,7 @@ export declare class InventoryController {
     findOneCategory(id: string): Promise<Category>;
     createCategory(createCategoryDto: CreateCategoryDto): Promise<Category>;
     updateCategory(id: string, updateCategoryDto: UpdateCategoryDto): Promise<void>;
-    removeCategory(id: string): Promise<{
-        success: boolean;
-        message: string;
-    }>;
+    removeCategory(id: string, res: Response): Promise<Response<any, Record<string, any>>>;
     findAllAttributes(query: QueryInventoryDto): Promise<{
         success: boolean;
         message: string;
@@ -184,10 +167,7 @@ export declare class InventoryController {
     findOneAttribute(id: string): Promise<Attribute>;
     createAttribute(createAttributeDto: CreateAttributeDto): Promise<Attribute>;
     updateAttribute(id: string, updateAttributeDto: UpdateAttributeDto): Promise<void>;
-    removeAttribute(id: string): Promise<{
-        success: boolean;
-        message: string;
-    }>;
+    removeAttribute(id: string, res: Response): Promise<Response<any, Record<string, any>>>;
     findAllAttributeItems(query: QueryInventoryDto): Promise<{
         success: boolean;
         message: string;
@@ -204,10 +184,7 @@ export declare class InventoryController {
     findOneAttributeItem(id: string): Promise<AttributeItem>;
     createAttributeItem(createAttributeItemDto: CreateAttributeItemDto): Promise<AttributeItem>;
     updateAttributeItem(id: string, updateAttributeItem: UpdateAttributeItemDto): Promise<void>;
-    removeAttributeItem(id: string): Promise<{
-        success: boolean;
-        message: string;
-    }>;
+    removeAttributeItem(id: string, res: Response): Promise<Response<any, Record<string, any>>>;
     findAllItems(query: QueryInventoryDto): Promise<{
         success: boolean;
         message: string;
@@ -224,10 +201,7 @@ export declare class InventoryController {
     findOneItem(id: string): Promise<Item>;
     createItem(createItemDto: CreateItemDto): Promise<Item>;
     updateItem(id: string, updateItemDto: UpdateItemDto): Promise<void>;
-    removeItem(id: string): Promise<{
-        success: boolean;
-        message: string;
-    }>;
+    removeItem(id: string, res: Response): Promise<Response<any, Record<string, any>>>;
     findAllItemVariations(query: QueryInventoryDto): Promise<{
         success: boolean;
         message: string;
@@ -244,8 +218,5 @@ export declare class InventoryController {
     findOneItemVariation(id: string): Promise<ItemVariation>;
     createItemVariation(dto: CreateItemVariationDto): Promise<ItemVariation>;
     updateItemVariation(id: string, dto: UpdateItemVariationDto): Promise<void>;
-    removeItemVariation(id: string): Promise<{
-        success: boolean;
-        message: string;
-    }>;
+    removeItemVariation(id: string, res: Response): Promise<Response<any, Record<string, any>>>;
 }

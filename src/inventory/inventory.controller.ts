@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Query, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { InventoryService } from './inventory.service';
 import { Lot } from './entities/lot.entity/lot.entity';
 import { CreateLotDto } from './dto/create-lot.dto';
@@ -68,8 +69,18 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
   @Delete('lot/:id')
-  removeLot(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
-    return this.inventoryService.removeLot(+id);
+  async removeLot(@Param('id') id: string, @Res() res: Response) {
+    const result = await this.inventoryService.removeLot(+id);
+
+    if (!result.success && result.message.includes('not found')) {
+      return res.status(404).json(result);
+    }
+
+    if (!result.success && result.message.includes('in use')) {
+      return res.status(206).json(result);
+    }
+
+    return res.status(200).json(result);
   }
 
   // ############# Supplier endpoints #############
@@ -102,8 +113,18 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
   @Delete('supplier/:id')
-  removeSupplier(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
-    return this.inventoryService.removeSupplier(+id);
+  async removeSupplier(@Param('id') id: string, @Res() res: Response) {
+    const result = await this.inventoryService.removeSupplier(+id);
+
+    if (!result.success && result.message.includes('not found')) {
+      return res.status(404).json(result);
+    }
+
+    if (!result.success && result.message.includes('in use')) {
+      return res.status(206).json(result);
+    }
+
+    return res.status(200).json(result);
   }
 
   @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
@@ -142,9 +163,20 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
   @Delete('location/:id')
-  removeLocation(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
-    return this.inventoryService.removeLocation(+id);
+  async removeLocation(@Param('id') id: string, @Res() res: Response) {
+    const result = await this.inventoryService.removeLocation(+id);
+
+    if (!result.success && result.message.includes('not found')) {
+      return res.status(404).json(result);
+    }
+
+    if (!result.success && result.message.includes('in use')) {
+      return res.status(206).json(result);
+    }
+
+    return res.status(200).json(result);
   }
+
 
   // ############# Brand endpoints #############
 
@@ -174,9 +206,20 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
   @Delete('brand/:id')
-  removeBrand(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
-    return this.inventoryService.removeBrand(+id);
+  async removeBrand(@Param('id') id: string, @Res() res: Response) {
+    const result = await this.inventoryService.removeBrand(+id);
+
+    if (!result.success && result.message.includes('not found')) {
+      return res.status(404).json(result);
+    }
+
+    if (!result.success && result.message.includes('in use')) {
+      return res.status(206).json(result);
+    }
+
+    return res.status(200).json(result);
   }
+
 
   // ##################  tag endpoints #################
 
@@ -206,9 +249,20 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
   @Delete('tag/:id')
-  removeTag(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
-    return this.inventoryService.removeTag(+id);
+  async removeTag(@Param('id') id: string, @Res() res: Response) {
+    const result = await this.inventoryService.removeTag(+id);
+
+    if (!result.success && result.message.includes('not found')) {
+      return res.status(404).json(result);
+    }
+
+    if (!result.success && result.message.includes('in use')) {
+      return res.status(206).json(result);
+    }
+
+    return res.status(200).json(result);
   }
+
 
   // ################## Category endpoints ##################
   @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
@@ -237,9 +291,20 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
   @Delete('categories/:id')
-  removeCategory(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
-    return this.inventoryService.removeCategory(+id);
+  async removeCategory(@Param('id') id: string, @Res() res: Response) {
+    const result = await this.inventoryService.removeCategory(+id);
+
+    if (!result.success && result.message.includes('not found')) {
+      return res.status(404).json(result);
+    }
+
+    if (!result.success && result.message.includes('in use')) {
+      return res.status(206).json(result);
+    }
+
+    return res.status(200).json(result);
   }
+
 
   // ################## Attribute endpoints #################
   @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
@@ -271,9 +336,20 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
   @Delete('attributes/:id')
-  removeAttribute(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
-    return this.inventoryService.removeAttribute(+id);
+  async removeAttribute(@Param('id') id: string, @Res() res: Response) {
+    const result = await this.inventoryService.removeAttribute(+id);
+
+    if (!result.success && result.message.includes('not found')) {
+      return res.status(404).json(result);
+    }
+
+    if (!result.success && result.message.includes('in use')) {
+      return res.status(206).json(result);
+    }
+
+    return res.status(200).json(result);
   }
+
 
   // ################### AttributeItem endpoints #################
   @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
@@ -302,9 +378,20 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
   @Delete('attribute-items/:id')
-  removeAttributeItem(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
-    return this.inventoryService.removeAttributeItem(+id);
+  async removeAttributeItem(@Param('id') id: string, @Res() res: Response) {
+    const result = await this.inventoryService.removeAttributeItem(+id);
+
+    if (!result.success && result.message.includes('not found')) {
+      return res.status(404).json(result);
+    }
+
+    if (!result.success && result.message.includes('in use')) {
+      return res.status(206).json(result);
+    }
+
+    return res.status(200).json(result);
   }
+
 
 
   // Item endpoints
@@ -334,9 +421,20 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
   @Delete('items/:id')
-  removeItem(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
-    return this.inventoryService.removeItem(+id);
+  async removeItem(@Param('id') id: string, @Res() res: Response) {
+    const result = await this.inventoryService.removeItem(+id);
+
+    if (!result.success && result.message.includes('not found')) {
+      return res.status(404).json(result);
+    }
+
+    if (!result.success && result.message.includes('in use')) {
+      return res.status(206).json(result);
+    }
+
+    return res.status(200).json(result);
   }
+
 
 // ItemVariation endpoints
   @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
@@ -365,9 +463,20 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
   @Delete('item-variations/:id')
-  removeItemVariation(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
-    return this.inventoryService.removeItemVariation(+id);
+  async removeItemVariation(@Param('id') id: string, @Res() res: Response) {
+    const result = await this.inventoryService.removeItemVariation(+id);
+
+    if (!result.success && result.message.includes('not found')) {
+      return res.status(404).json(result);
+    }
+
+    if (!result.success && result.message.includes('in use')) {
+      return res.status(206).json(result);
+    }
+
+    return res.status(200).json(result);
   }
+
 
 
 
