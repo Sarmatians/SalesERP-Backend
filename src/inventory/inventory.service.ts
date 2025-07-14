@@ -982,13 +982,25 @@ export class InventoryService {
   // Delete Item
   async removeItem(id: number) {
     try {
+      // First, find and delete all item variations manually
+      const variations = await this.itemVariationRepository.find({
+        where: { item: { id } },
+      });
+
+      if (variations.length > 0) {
+        await this.itemVariationRepository.remove(variations);
+      }
+
+      // Then, delete the item
       const result = await this.itemRepository.delete(id);
       if (!result.affected) return this.response(false, 'Item not found');
-      return this.response(true, 'Item deleted successfully');
+
+      return this.response(true, 'Item and related variations deleted successfully');
     } catch (error) {
       return this.handleDeleteError(error, 'Item');
     }
   }
+
 
   // ####################  ItemVariation methods ####################
 
