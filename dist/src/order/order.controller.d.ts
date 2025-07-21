@@ -26,8 +26,12 @@ export declare class OrderController {
         deleted: boolean;
     }>;
     createInvoice(dto: CreateInvoiceDto): Promise<{
-        invoice: import("./entities/invoice.entity").Invoice;
-        items: import("./entities/invoice-item.entity").InvoiceItem[];
+        success: boolean;
+        message: string;
+        data: {
+            invoice: import("./entities/invoice.entity").Invoice;
+            items: import("./entities/invoice-item.entity").InvoiceItem[];
+        };
     }>;
     getAllInvoices(query: QueryInventoryDto): Promise<{
         success: boolean;
