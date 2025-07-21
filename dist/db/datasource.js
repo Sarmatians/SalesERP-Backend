@@ -14,7 +14,7 @@ exports.dataSourceOptions = {
     entities: ['dist/**/*.entity{.ts,.js}'],
     migrations: ['dist/db/migrations/*{.ts,.js}'],
     logging: false,
-    synchronize: true,
+    synchronize: false,
 };
 const dataSource = new typeorm_1.DataSource(exports.dataSourceOptions);
 exports.default = dataSource;
