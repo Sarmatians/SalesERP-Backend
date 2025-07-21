@@ -21,7 +21,7 @@ __decorate([
     __metadata("design:type", Number)
 ], Invoice.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Invoice.prototype, "inv_no", void 0);
 __decorate([
@@ -33,47 +33,47 @@ __decorate([
     __metadata("design:type", Date)
 ], Invoice.prototype, "updated", void 0);
 __decorate([
-    (0, typeorm_1.Column)('decimal'),
+    (0, typeorm_1.Column)('decimal', { nullable: true }),
     __metadata("design:type", Number)
 ], Invoice.prototype, "bill", void 0);
 __decorate([
-    (0, typeorm_1.Column)('decimal'),
+    (0, typeorm_1.Column)('decimal', { nullable: true }),
     __metadata("design:type", Number)
 ], Invoice.prototype, "discount", void 0);
 __decorate([
-    (0, typeorm_1.Column)('decimal'),
+    (0, typeorm_1.Column)('decimal', { nullable: true }),
     __metadata("design:type", Number)
 ], Invoice.prototype, "paid_amount", void 0);
 __decorate([
-    (0, typeorm_1.Column)('decimal'),
+    (0, typeorm_1.Column)('decimal', { nullable: true }),
     __metadata("design:type", Number)
 ], Invoice.prototype, "due_amount", void 0);
 __decorate([
-    (0, typeorm_1.Column)('decimal'),
+    (0, typeorm_1.Column)('decimal', { nullable: true }),
     __metadata("design:type", Number)
 ], Invoice.prototype, "grand_total", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Invoice.prototype, "status", void 0);
 __decorate([
-    (0, typeorm_1.Column)('decimal'),
+    (0, typeorm_1.Column)('decimal', { nullable: true }),
     __metadata("design:type", Number)
 ], Invoice.prototype, "vat", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Invoice.prototype, "shipping_address", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Invoice.prototype, "order_type", void 0);
 __decorate([
-    (0, typeorm_1.Column)('decimal'),
+    (0, typeorm_1.Column)('decimal', { nullable: true }),
     __metadata("design:type", Number)
 ], Invoice.prototype, "delivery_charge", void 0);
 __decorate([
-    (0, typeorm_1.Column)('decimal'),
+    (0, typeorm_1.Column)('decimal', { nullable: true }),
     __metadata("design:type", Number)
 ], Invoice.prototype, "delivery_cost", void 0);
 __decorate([

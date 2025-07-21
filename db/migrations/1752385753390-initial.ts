@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Initial1752384109540 implements MigrationInterface {
-    name = 'Initial1752384109540'
+export class Initial1752385753390 implements MigrationInterface {
+    name = 'Initial1752385753390'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "item" ADD "add_date" TIMESTAMP`);

@@ -9,7 +9,7 @@ export class Invoice {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ nullable: true })
   inv_no: string;
 
   @CreateDateColumn()
@@ -18,37 +18,37 @@ export class Invoice {
   @UpdateDateColumn()
   updated: Date;
 
-  @Column('decimal')
+  @Column('decimal', { nullable: true })
   bill: number;
 
-  @Column('decimal')
+  @Column('decimal', { nullable: true })
   discount: number;
 
-  @Column('decimal')
+  @Column('decimal', { nullable: true })
   paid_amount: number;
 
-  @Column('decimal')
+  @Column('decimal', { nullable: true })
   due_amount: number;
 
-  @Column('decimal')
+  @Column('decimal', { nullable: true })
   grand_total: number;
 
-  @Column()
+  @Column({ nullable: true })
   status: string;
 
-  @Column('decimal')
+  @Column('decimal', { nullable: true })
   vat: number;
 
-  @Column()
+  @Column({ nullable: true })
   shipping_address: string;
 
-  @Column()
+  @Column({ nullable: true })
   order_type: string;
 
-  @Column('decimal')
+  @Column('decimal', { nullable: true })
   delivery_charge: number;
 
-  @Column('decimal')
+  @Column('decimal', { nullable: true })
   delivery_cost: number;
 
   @Column({ nullable: true })

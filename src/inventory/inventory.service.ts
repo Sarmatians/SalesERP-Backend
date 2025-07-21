@@ -84,6 +84,22 @@ export class InventoryService {
         message: `Failed to delete ${entityName}: ${error.message}`,
       };
     }
+
+    // For building consistent responses
+    private buildResponse(status: 'success' | 'updated' | 'failed' | 'error', message: string, data: any = null
+    ): { statusCode: number; success: boolean; message: string; data?: any } {
+      switch (status) {
+        case 'success':
+          return { statusCode: 200, success: true, message, data };
+        case 'updated':
+          return { statusCode: 202, success: true, message, data };
+        case 'failed':
+          return { statusCode: 400, success: false, message };
+        case 'error':
+        default:
+          return { statusCode: 500, success: false, message };
+      }
+    }
   
 
   // #################### Lot methods ####################
@@ -883,99 +899,118 @@ export class InventoryService {
       await this.itemVariationRepository.save(variation);
     }
 
-    return savedItem;
+    // return savedItem;
+
+    const itemWithRelations = await this.itemRepository.findOne({
+      where: { id: savedItem.id },
+      relations: [
+        'brand',
+        'category',
+        'tags',
+        'attributes',
+        'location',
+        'supplier',
+        'lot',
+        'relatedItems',
+        'variations',
+        'variations.attributes',
+      ],
+    });
+
+    return itemWithRelations;
   }
 
   // Update Item
-  async updateItem(id: number, dto: UpdateItemDto): Promise<void> {
-    const item = await this.itemRepository.findOne({
-      where: { id },
-      relations: ['attributes', 'tags', 'relatedItems', 'brand', 'location', 'category', 'supplier'],
-    });
+  async updateItem(id: number, dto: UpdateItemDto): Promise<any> {
+    try {
+      const item = await this.itemRepository.findOne({
+        where: { id },
+        relations: ['attributes', 'tags', 'relatedItems', 'brand', 'location', 'category', 'supplier'],
+      });
 
-    if (!item) throw new Error('Item not found');
-
-    item.name = dto.name;
-
-    if (dto.sku !== undefined) item.sku = dto.sku;
-    if (dto.slug !== undefined) item.slug = dto.slug;
-    if (dto.barcode !== undefined) item.barcode = dto.barcode;
-    if (dto.quantity !== undefined) item.quantity = dto.quantity;
-    if (dto.purchasePrice !== undefined) item.purchasePrice = dto.purchasePrice;
-    if (dto.sellingPrice !== undefined) item.sellingPrice = dto.sellingPrice;
-    if (dto.discountPrice !== undefined) item.discountPrice = dto.discountPrice;
-    if (dto.discount !== undefined) item.discount = dto.discount;
-    if (dto.images !== undefined) item.images = dto.images;
-    item.is_variant = dto.is_variant ?? false;
-
-    // Optional location
-    if (dto.locationId !== undefined) {
-      const location = await this.locationRepository.findOne({ where: { id: dto.locationId } });
-      if (!location) throw new Error('Location not found');
-      item.location = location;
-    }
-
-    // Optional lot
-    if (dto.lotId !== undefined) {
-      if (dto.lotId === null) {
-        item.lot = null;
-      } else {
-        const lot = await this.lotRepository.findOne({ where: { id: dto.lotId } });
-        if (!lot) throw new Error('Lot not found');
-        item.lot = lot;
+      if (!item) {
+        return this.buildResponse('failed', 'Item not found');
       }
-    }
 
-    // Optional supplier
-    if (dto.supplierId !== undefined) {
-      if (dto.supplierId === null) {
-        item.supplier = null;
-      } else {
-        const supplier = await this.supplierRepository.findOne({ where: { id: dto.supplierId } });
-        if (!supplier) throw new Error('Supplier not found');
-        item.supplier = supplier;
+      item.name = dto.name;
+
+      if (dto.sku !== undefined) item.sku = dto.sku;
+      if (dto.slug !== undefined) item.slug = dto.slug;
+      if (dto.barcode !== undefined) item.barcode = dto.barcode;
+      if (dto.quantity !== undefined) item.quantity = dto.quantity;
+      if (dto.purchasePrice !== undefined) item.purchasePrice = dto.purchasePrice;
+      if (dto.sellingPrice !== undefined) item.sellingPrice = dto.sellingPrice;
+      if (dto.discountPrice !== undefined) item.discountPrice = dto.discountPrice;
+      if (dto.discount !== undefined) item.discount = dto.discount;
+      if (dto.images !== undefined) item.images = dto.images;
+      if (dto.is_variant !== undefined) item.is_variant = dto.is_variant;
+      if (dto.is_active !== undefined) item.is_active = dto.is_active;
+
+      if (dto.locationId !== undefined) {
+        const location = await this.locationRepository.findOne({ where: { id: dto.locationId } });
+        if (!location) throw new Error('Location not found');
+        item.location = location;
       }
-    }
 
-    // Optional brand
-    if (dto.brandId !== undefined) {
-      const brand = await this.brandRepository.findOne({ where: { id: dto.brandId } });
-      if (!brand) throw new Error('Brand not found');
-      item.brand = brand;
-    }
+      if (dto.lotId !== undefined) {
+        if (dto.lotId === null) {
+          item.lot = null;
+        } else {
+          const lot = await this.lotRepository.findOne({ where: { id: dto.lotId } });
+          if (!lot) throw new Error('Lot not found');
+          item.lot = lot;
+        }
+      }
 
-    // Optional category
-    if (dto.categoryId !== undefined) {
-      const category = await this.categoryRepository.findOne({ where: { id: dto.categoryId } });
-      if (!category) throw new Error('Category not found');
-      item.category = category;
-    }
+      if (dto.supplierId !== undefined) {
+        if (dto.supplierId === null) {
+          item.supplier = null;
+        } else {
+          const supplier = await this.supplierRepository.findOne({ where: { id: dto.supplierId } });
+          if (!supplier) throw new Error('Supplier not found');
+          item.supplier = supplier;
+        }
+      }
 
-    // Optional attributes
-    if (dto.attributeIds !== undefined) {
-      const attributes = await this.attributeRepository.findByIds(dto.attributeIds);
-      item.attributes = attributes;
-    }
+      if (dto.brandId !== undefined) {
+        const brand = await this.brandRepository.findOne({ where: { id: dto.brandId } });
+        if (!brand) throw new Error('Brand not found');
+        item.brand = brand;
+      }
 
-    // Optional tags
-    if (dto.tagIds !== undefined) {
-      const tags = await this.tagRepository.findByIds(dto.tagIds);
-      item.tags = tags;
-    }
+      if (dto.categoryId !== undefined) {
+        const category = await this.categoryRepository.findOne({ where: { id: dto.categoryId } });
+        if (!category) throw new Error('Category not found');
+        item.category = category;
+      }
 
-    // Optional related items
-    if (dto.relatedItemIds !== undefined) {
-      const relatedItems = await this.itemRepository.findByIds(dto.relatedItemIds);
-      item.relatedItems = relatedItems;
-    }
+      if (dto.attributeIds !== undefined) {
+        const attributes = await this.attributeRepository.findByIds(dto.attributeIds);
+        item.attributes = attributes;
+      }
 
-    await this.itemRepository.save(item);
+      if (dto.tagIds !== undefined) {
+        const tags = await this.tagRepository.findByIds(dto.tagIds);
+        item.tags = tags;
+      }
 
-    // update item quantity 
-    if (item.is_variant) {
-      const variations = await this.itemVariationRepository.find({ where: { item: { id: item.id } } });
-      item.quantity = variations.reduce((sum, v) => sum + (v.quantity ?? 0), 0);
+      if (dto.relatedItemIds !== undefined) {
+        const relatedItems = await this.itemRepository.findByIds(dto.relatedItemIds);
+        item.relatedItems = relatedItems;
+      }
+
       await this.itemRepository.save(item);
+
+      if (item.is_variant) {
+        const variations = await this.itemVariationRepository.find({ where: { item: { id: item.id } } });
+        item.quantity = variations.reduce((sum, v) => sum + (v.quantity ?? 0), 0);
+        await this.itemRepository.save(item);
+      }
+
+      return this.buildResponse('updated', 'Item updated successfully', item);
+    } catch (error) {
+      console.error('Update error:', error.message);
+      return this.buildResponse('error', `Unexpected error occurred while updating item: ${error.message}`);
     }
   }
 
