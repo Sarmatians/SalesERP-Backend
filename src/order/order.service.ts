@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, InternalServerErrorException, HttpStatus  } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { Invoice } from './entities/invoice.entity';
@@ -88,12 +88,36 @@ export class OrderService {
     }
 
     async createCustomer(dto: CreateCustomerDto) {
-      return this.customerRepository.save(dto);
+      try {
+        return await this.customerRepository.save(dto);
+      } catch (error) {
+        if (error.code === '23505') {
+          throw new HttpException(
+            'A customer with this phone number already exists.',
+            HttpStatus.CONFLICT, // or 409 
+          );
+        }
+
+        console.error('Unexpected error creating customer:', error);
+        throw new InternalServerErrorException('An unexpected error occurred while creating the customer.');
+      }
     }
 
     async updateCustomer(id: number, update: Partial<CreateCustomerDto>) {
-      await this.customerRepository.update(id, update);
-      return this.getCustomerById(id);
+      try {
+        await this.customerRepository.update(id, update);
+        return this.getCustomerById(id);
+      } catch (error) {
+        if (error.code === '23505') {
+          throw new HttpException(
+            'A customer with this phone number already exists.',
+            HttpStatus.CONFLICT, // or 409
+          );
+        }
+
+        console.error('Unexpected error updating customer:', error);
+        throw new InternalServerErrorException('An unexpected error occurred while updating the customer.');
+      }
     }
 
     async deleteCustomer(id: number) {
