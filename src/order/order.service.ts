@@ -52,6 +52,9 @@ export class OrderService {
       const skip = (page - 1) * limit;
 
       const [customers, total] = await this.customerRepository.findAndCount({
+        relations: [
+          'invoices',
+        ],
         skip,
         take: limit,
         ...(query.search && {
@@ -160,47 +163,75 @@ export class OrderService {
       return this.invoiceRepository.findOne({ where: { id }, relations: ['customer', 'items'] });
     }
 
-  async createInvoice(createInvoiceDto: CreateInvoiceDto) {
-    const customer = await this.customerRepository.findOne({
-      where: { id: Number(createInvoiceDto.customer_id) },
-    });
+    async createInvoice(createInvoiceDto: CreateInvoiceDto) {
+      try {
+        let customer = await this.customerRepository.findOne({
+          where: { phone: createInvoiceDto.customer_id },
+        });
 
-    const invoice = this.invoiceRepository.create({
-      ...createInvoiceDto,
-      customer,
-    });
-    const savedInvoice = await this.invoiceRepository.save(invoice);
+        if (!customer) {
+          customer = this.customerRepository.create({
+            phone: createInvoiceDto.customer_id,
+          });
+          customer = await this.customerRepository.save(customer);
+        }
 
-    const items: InvoiceItem[] = [];
+        const timestamp = new Date();
+        const inv_no = `${String(timestamp.getDate()).padStart(2, '0')}${String(timestamp.getMonth() + 1).padStart(2, '0')}${timestamp.getFullYear()}${String(timestamp.getHours()).padStart(2, '0')}${String(timestamp.getMinutes()).padStart(2, '0')}${String(timestamp.getSeconds()).padStart(2, '0')}`;
 
-    for (const itemDto of createInvoiceDto.items) {
-      const variation = await this.itemVariationRepository.findOne({
-        where: { id: Number(itemDto.item_variation_id) },
-      });
+        const invoice = this.invoiceRepository.create({
+          ...createInvoiceDto,
+          inv_no,
+          customer,
+        });
 
-      if (!variation) {
-        throw new Error(`Item variation with ID ${itemDto.item_variation_id} not found`);
+        const savedInvoice = await this.invoiceRepository.save(invoice);
+
+        const items: InvoiceItem[] = [];
+
+        if (createInvoiceDto.items && createInvoiceDto.items.length > 0) {
+          for (const itemDto of createInvoiceDto.items) {
+            const variation = await this.itemVariationRepository.findOne({
+              where: { id: Number(itemDto.item_variation_id) },
+            });
+
+            if (!variation) {
+              throw new Error(`Item variation with ID ${itemDto.item_variation_id} not found`);
+            }
+
+            if (variation.quantity < itemDto.qty) {
+              throw new Error(`Not enough quantity for variation ${variation.id}`);
+            }
+
+            variation.quantity -= itemDto.qty;
+            await this.itemVariationRepository.save(variation);
+
+            const invoiceItem = this.invoiceItemRepository.create({
+              ...itemDto,
+              invoice: savedInvoice,
+              itemVariation: variation,
+            });
+
+            items.push(invoiceItem);
+          }
+
+          await this.invoiceItemRepository.save(items);
+        }
+
+        return {
+          success: true,
+          message: 'Invoice created successfully',
+          data: {
+            invoice: savedInvoice,
+            items,
+          },
+        };
+      } catch (error) {
+        console.error('💥 Invoice Creation Error:', error);
+        throw new Error(error.message || 'Internal server error');
       }
-
-      if (variation.quantity < itemDto.qty) {
-        throw new Error(`Not enough quantity for variation ${variation.id}`);
-      }
-
-      variation.quantity -= itemDto.qty;
-      await this.itemVariationRepository.save(variation);
-
-      const invoiceItem = this.invoiceItemRepository.create({
-        ...itemDto,
-        invoice: savedInvoice,
-        itemVariation: variation,
-      });
-
-      items.push(invoiceItem);
     }
 
-    const savedItems = await this.invoiceItemRepository.save(items);
-    return { invoice: savedInvoice, items: savedItems };
-  }
 
     async updateInvoice(id: number, update: Partial<CreateInvoiceDto>) {
       await this.invoiceRepository.update(id, update);

@@ -44,6 +44,7 @@ export declare class InventoryService {
     constructor(lotRepository: Repository<Lot>, supplierRepository: Repository<Supplier>, attributeRepository: Repository<Attribute>, attributeItemRepository: Repository<AttributeItem>, locationRepository: Repository<Location>, categoryRepository: Repository<Category>, brandRepository: Repository<Brand>, tagRepository: Repository<Tag>, itemRepository: Repository<Item>, itemVariationRepository: Repository<ItemVariation>);
     private response;
     private handleDeleteError;
+    private buildResponse;
     findAllLots(query: QueryInventoryDto): Promise<{
         success: boolean;
         message: string;
@@ -234,7 +235,7 @@ export declare class InventoryService {
     }>;
     findOneItem(id: number): Promise<Item>;
     createItem(createItemDto: CreateItemDto): Promise<Item>;
-    updateItem(id: number, dto: UpdateItemDto): Promise<void>;
+    updateItem(id: number, dto: UpdateItemDto): Promise<any>;
     removeItem(id: number): Promise<{
         success: boolean;
         message: string;

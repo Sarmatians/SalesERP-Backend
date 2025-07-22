@@ -47,8 +47,12 @@ export declare class OrderService {
     }>;
     getInvoiceById(id: number): Promise<Invoice>;
     createInvoice(createInvoiceDto: CreateInvoiceDto): Promise<{
-        invoice: Invoice;
-        items: InvoiceItem[];
+        success: boolean;
+        message: string;
+        data: {
+            invoice: Invoice;
+            items: InvoiceItem[];
+        };
     }>;
     updateInvoice(id: number, update: Partial<CreateInvoiceDto>): Promise<Invoice>;
     deleteInvoice(id: number): Promise<{
