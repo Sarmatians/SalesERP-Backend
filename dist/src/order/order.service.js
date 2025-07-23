@@ -79,11 +79,29 @@ let OrderService = class OrderService {
         return this.customerRepository.findOne({ where: { id }, relations: ['invoices'] });
     }
     async createCustomer(dto) {
-        return this.customerRepository.save(dto);
+        try {
+            return await this.customerRepository.save(dto);
+        }
+        catch (error) {
+            if (error.code === '23505') {
+                throw new common_1.HttpException('A customer with this phone number already exists.', common_1.HttpStatus.CONFLICT);
+            }
+            console.error('Unexpected error creating customer:', error);
+            throw new common_1.InternalServerErrorException('An unexpected error occurred while creating the customer.');
+        }
     }
     async updateCustomer(id, update) {
-        await this.customerRepository.update(id, update);
-        return this.getCustomerById(id);
+        try {
+            await this.customerRepository.update(id, update);
+            return this.getCustomerById(id);
+        }
+        catch (error) {
+            if (error.code === '23505') {
+                throw new common_1.HttpException('A customer with this phone number already exists.', common_1.HttpStatus.CONFLICT);
+            }
+            console.error('Unexpected error updating customer:', error);
+            throw new common_1.InternalServerErrorException('An unexpected error occurred while updating the customer.');
+        }
     }
     async deleteCustomer(id) {
         await this.customerRepository.delete(id);

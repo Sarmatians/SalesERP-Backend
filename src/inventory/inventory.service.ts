@@ -811,6 +811,7 @@ export class InventoryService {
       ? createItemDto.slug 
       : createItemDto.name?.trim().toLowerCase().replace(/\s+/g, '-');
 
+    item.size = createItemDto.size;
     item.quantity = createItemDto.quantity;
     item.purchasePrice = createItemDto.purchasePrice;
     item.sellingPrice = createItemDto.sellingPrice;
@@ -894,7 +895,8 @@ export class InventoryService {
 
       // Generate variation barcode
       // variation.barcode = variation.generateBarcode(savedItem.id);
-      variation.barcode = variation.generateBarcode(savedItem);
+      // variation.barcode = variation.generateBarcode(savedItem);
+      variation.barcode =  savedItem.barcode;
 
       await this.itemVariationRepository.save(variation);
     }
@@ -936,6 +938,7 @@ export class InventoryService {
 
       if (dto.sku !== undefined) item.sku = dto.sku;
       if (dto.slug !== undefined) item.slug = dto.slug;
+      if (dto.size !== undefined) item.size = dto.size;
       if (dto.barcode !== undefined) item.barcode = dto.barcode;
       if (dto.quantity !== undefined) item.quantity = dto.quantity;
       if (dto.purchasePrice !== undefined) item.purchasePrice = dto.purchasePrice;

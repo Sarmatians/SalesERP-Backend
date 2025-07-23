@@ -660,6 +660,7 @@ let InventoryService = class InventoryService {
         item.slug = createItemDto.slug
             ? createItemDto.slug
             : createItemDto.name?.trim().toLowerCase().replace(/\s+/g, '-');
+        item.size = createItemDto.size;
         item.quantity = createItemDto.quantity;
         item.purchasePrice = createItemDto.purchasePrice;
         item.sellingPrice = createItemDto.sellingPrice;
@@ -726,7 +727,7 @@ let InventoryService = class InventoryService {
             variation.discountPrice = savedItem.discountPrice ?? 0;
             variation.discount = savedItem.discount ?? 0;
             variation.location = savedItem.location;
-            variation.barcode = variation.generateBarcode(savedItem);
+            variation.barcode = savedItem.barcode;
             await this.itemVariationRepository.save(variation);
         }
         const itemWithRelations = await this.itemRepository.findOne({
@@ -760,6 +761,8 @@ let InventoryService = class InventoryService {
                 item.sku = dto.sku;
             if (dto.slug !== undefined)
                 item.slug = dto.slug;
+            if (dto.size !== undefined)
+                item.size = dto.size;
             if (dto.barcode !== undefined)
                 item.barcode = dto.barcode;
             if (dto.quantity !== undefined)

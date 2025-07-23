@@ -13,6 +13,7 @@ export declare class Item {
     sku?: string;
     slug?: string;
     barcode?: string;
+    size?: string;
     created?: Timestamp;
     updated?: Timestamp;
     quantity?: number;
