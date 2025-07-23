@@ -28,6 +28,9 @@ export class Item {
   @Column({ nullable: true })
   barcode?: string;
 
+  @Column({ nullable: true })
+  size?: string;
+
   @CreateDateColumn({ nullable: true })
   created?: Timestamp;
 
