@@ -18,6 +18,10 @@ export class CreateItemDto {
 
   @IsOptional()
   @IsString()
+  size?: string;
+
+  @IsOptional()
+  @IsString()
   barcode?: string;
 
   @IsOptional()

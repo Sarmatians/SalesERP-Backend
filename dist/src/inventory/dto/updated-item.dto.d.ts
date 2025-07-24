@@ -2,6 +2,7 @@ export declare class UpdateItemDto {
     name: string;
     sku?: string;
     slug?: string;
+    size?: string;
     barcode?: string;
     quantity?: number;
     purchasePrice?: number;

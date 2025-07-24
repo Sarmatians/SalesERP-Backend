@@ -14,6 +14,10 @@ export class UpdateItemDto {
   @IsOptional()
   @IsString()
   slug?: string;
+  
+  @IsOptional()
+  @IsString()
+  size?: string;
 
   @IsOptional()
   @IsString()
