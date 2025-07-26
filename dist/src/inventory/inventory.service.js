@@ -791,8 +791,16 @@ let InventoryService = class InventoryService {
                 item.images = dto.images;
             if (dto.is_variant !== undefined)
                 item.is_variant = dto.is_variant;
-            if (dto.is_active !== undefined)
+            if (dto.is_active !== undefined) {
                 item.is_active = dto.is_active;
+                const variations = await this.itemVariationRepository.find({
+                    where: { item: { id: item.id } },
+                });
+                for (const variation of variations) {
+                    variation.is_active = dto.is_active;
+                }
+                await this.itemVariationRepository.save(variations);
+            }
             if (dto.locationId !== undefined) {
                 const location = await this.locationRepository.findOne({ where: { id: dto.locationId } });
                 if (!location)
@@ -997,9 +1005,22 @@ let InventoryService = class InventoryService {
     }
     async removeItemVariation(id) {
         try {
+            const itemVariation = await this.itemVariationRepository.findOne({
+                where: { id },
+                relations: ['item'],
+            });
+            if (!itemVariation)
+                return this.response(false, 'Item Variation not found');
             const result = await this.itemVariationRepository.delete(id);
             if (!result.affected)
                 return this.response(false, 'Item Variation not found');
+            if (itemVariation.item.is_variant) {
+                const variations = await this.itemVariationRepository.find({
+                    where: { item: { id: itemVariation.item.id } },
+                });
+                itemVariation.item.quantity = variations.reduce((sum, v) => sum + (v.quantity ?? 0), 0);
+                await this.itemRepository.save(itemVariation.item);
+            }
             return this.response(true, 'Item Variation deleted successfully');
         }
         catch (error) {
