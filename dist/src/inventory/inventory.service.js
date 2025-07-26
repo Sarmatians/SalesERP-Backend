@@ -791,8 +791,16 @@ let InventoryService = class InventoryService {
                 item.images = dto.images;
             if (dto.is_variant !== undefined)
                 item.is_variant = dto.is_variant;
-            if (dto.is_active !== undefined)
+            if (dto.is_active !== undefined) {
                 item.is_active = dto.is_active;
+                const variations = await this.itemVariationRepository.find({
+                    where: { item: { id: item.id } },
+                });
+                for (const variation of variations) {
+                    variation.is_active = dto.is_active;
+                }
+                await this.itemVariationRepository.save(variations);
+            }
             if (dto.locationId !== undefined) {
                 const location = await this.locationRepository.findOne({ where: { id: dto.locationId } });
                 if (!location)
