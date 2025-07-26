@@ -591,7 +591,7 @@ let InventoryService = class InventoryService {
         }
     }
     async findAllItems(query) {
-        const { page = '1', limit = '10', search } = query;
+        const { page = '1', limit = '10', search, is_active } = query;
         const take = parseInt(limit);
         const skip = (parseInt(page) - 1) * take;
         let where = {};
@@ -601,6 +601,18 @@ let InventoryService = class InventoryService {
                 { sku: (0, typeorm_2.ILike)(`%${search}%`) },
                 { barcode: (0, typeorm_2.ILike)(`%${search}%`) },
             ];
+        }
+        if (is_active && is_active !== 'all') {
+            const isActiveValue = is_active === 'true';
+            if (search) {
+                where = where.map((condition) => ({
+                    ...condition,
+                    is_active: isActiveValue,
+                }));
+            }
+            else {
+                where = { is_active: isActiveValue };
+            }
         }
         const [data, total] = await this.itemRepository.findAndCount({
             where,
@@ -864,7 +876,7 @@ let InventoryService = class InventoryService {
         }
     }
     async findAllItemVariations(query) {
-        const { page = '1', limit = '10', search } = query;
+        const { page = '1', limit = '10', search, barcode } = query;
         const take = parseInt(limit);
         const skip = (parseInt(page) - 1) * take;
         const queryBuilder = this.itemVariationRepository
@@ -873,7 +885,10 @@ let InventoryService = class InventoryService {
             .leftJoinAndSelect('itemVariation.attributes', 'attributes')
             .leftJoinAndSelect('itemVariation.location', 'location');
         if (search) {
-            queryBuilder.where('item.name ILIKE :search OR itemVariation.barcode ILIKE :search', { search: `%${search}%` });
+            queryBuilder.andWhere('(item.name ILIKE :search OR itemVariation.barcode ILIKE :search)', { search: `%${search}%` });
+        }
+        if (barcode) {
+            queryBuilder.andWhere('itemVariation.barcode = :barcode', { barcode });
         }
         const [data, total] = await queryBuilder
             .skip(skip)
