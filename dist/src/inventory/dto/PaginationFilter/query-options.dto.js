@@ -29,4 +29,14 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], QueryInventoryDto.prototype, "search", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsIn)(['true', 'false', 'all']),
+    __metadata("design:type", String)
+], QueryInventoryDto.prototype, "is_active", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], QueryInventoryDto.prototype, "barcode", void 0);
 //# sourceMappingURL=query-options.dto.js.map
