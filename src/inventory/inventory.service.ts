@@ -729,19 +729,36 @@ export class InventoryService {
     
 
   // ####################  ITEM  ####################
-    async findAllItems(query: QueryInventoryDto) {
-    const { page = '1', limit = '10', search } = query;
+  async findAllItems(query: QueryInventoryDto) {
+    const { page = '1', limit = '10', search, is_active } = query;
     const take = parseInt(limit);
     const skip = (parseInt(page) - 1) * take;
 
     let where: any = {};
 
+    // Handle search functionality
     if (search) {
       where = [
         { name: ILike(`%${search}%`) },
         { sku: ILike(`%${search}%`) },
         { barcode: ILike(`%${search}%`) },
       ];
+    }
+
+    // Handle is_active filter
+    if (is_active && is_active !== 'all') {
+      const isActiveValue = is_active === 'true';
+      
+      if (search) {
+        // If both search and is_active filters are present
+        where = where.map((condition: any) => ({
+          ...condition,
+          is_active: isActiveValue,
+        }));
+      } else {
+        // If only is_active filter is present
+        where = { is_active: isActiveValue };
+      }
     }
 
     const [data, total] = await this.itemRepository.findAndCount({
@@ -947,8 +964,21 @@ export class InventoryService {
       if (dto.discount !== undefined) item.discount = dto.discount;
       if (dto.images !== undefined) item.images = dto.images;
       if (dto.is_variant !== undefined) item.is_variant = dto.is_variant;
-      if (dto.is_active !== undefined) item.is_active = dto.is_active;
+      // if (dto.is_active !== undefined) item.is_active = dto.is_active;
 
+      if (dto.is_active !== undefined) {
+        item.is_active = dto.is_active;
+        const variations = await this.itemVariationRepository.find({
+          where: { item: { id: item.id } },
+        });
+
+        for (const variation of variations) {
+          variation.is_active = dto.is_active;
+        }
+
+        await this.itemVariationRepository.save(variations);
+      }
+      
       if (dto.locationId !== undefined) {
         const location = await this.locationRepository.findOne({ where: { id: dto.locationId } });
         if (!location) throw new Error('Location not found');
@@ -1039,12 +1069,14 @@ export class InventoryService {
     }
   }
 
+  // Find ACTIVE/INACTIVE Items with Pagination
+  
 
   // ####################  ItemVariation methods ####################
 
   // All Item Variations with Pagination
   async findAllItemVariations(query: QueryInventoryDto) {
-    const { page = '1', limit = '10', search } = query;
+    const { page = '1', limit = '10', search, barcode } = query;
     const take = parseInt(limit);
     const skip = (parseInt(page) - 1) * take;
 
@@ -1055,10 +1087,14 @@ export class InventoryService {
       .leftJoinAndSelect('itemVariation.location', 'location');
 
     if (search) {
-      queryBuilder.where(
-        'item.name ILIKE :search OR itemVariation.barcode ILIKE :search',
+      queryBuilder.andWhere(
+        '(item.name ILIKE :search OR itemVariation.barcode ILIKE :search)',
         { search: `%${search}%` },
       );
+    }
+
+    if (barcode) {
+      queryBuilder.andWhere('itemVariation.barcode = :barcode', { barcode });
     }
 
     const [data, total] = await queryBuilder
@@ -1183,8 +1219,22 @@ export class InventoryService {
   // Delete Variations
   async removeItemVariation(id: number) {
     try {
+      const itemVariation = await this.itemVariationRepository.findOne({
+        where: { id },
+        relations: ['item'],
+      });
+      if (!itemVariation) return this.response(false, 'Item Variation not found');
       const result = await this.itemVariationRepository.delete(id);
       if (!result.affected) return this.response(false, 'Item Variation not found');
+
+      if (itemVariation.item.is_variant) {
+        const variations = await this.itemVariationRepository.find({
+          where: { item: { id: itemVariation.item.id } },
+        });
+        itemVariation.item.quantity = variations.reduce((sum, v) => sum + (v.quantity ?? 0), 0);
+        await this.itemRepository.save(itemVariation.item);
+      }
+
       return this.response(true, 'Item Variation deleted successfully');
     } catch (error) {
       return this.handleDeleteError(error, 'Item Variation');

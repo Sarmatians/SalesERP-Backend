@@ -406,7 +406,7 @@ export class InventoryController {
   findOneItem(@Param('id') id: string): Promise<Item> {
     return this.inventoryService.findOneItem(+id);
   }
-
+ 
   @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
   @Post('items')
   createItem(@Body() createItemDto: CreateItemDto): Promise<Item> {
@@ -434,6 +434,8 @@ export class InventoryController {
 
     return res.status(200).json(result);
   }
+
+
 
 
 // ItemVariation endpoints

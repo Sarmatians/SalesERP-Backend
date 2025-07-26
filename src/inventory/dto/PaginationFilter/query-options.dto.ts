@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 
-import { IsOptional, IsString, IsNumberString } from 'class-validator';
+import { IsOptional, IsString, IsNumberString, IsIn } from 'class-validator';
 
 export class QueryInventoryDto {
   @IsOptional()
@@ -14,4 +14,12 @@ export class QueryInventoryDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @IsOptional()
+  @IsIn(['true', 'false', 'all'])
+  is_active?: 'true' | 'false' | 'all';
+
+  @IsOptional()
+  @IsString()
+  barcode?: string;  
 }
