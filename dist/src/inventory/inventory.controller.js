@@ -71,6 +71,9 @@ let InventoryController = class InventoryController {
     findOneSupplier(id) {
         return this.inventoryService.findOneSupplier(+id);
     }
+    findOneSupplierWithInvoices(id) {
+        return this.inventoryService.findOneSupplierWithSupllierInvoice(+id);
+    }
     createSupplier(createSupplierDto) {
         return this.inventoryService.createSupplier(createSupplierDto);
     }
@@ -326,6 +329,14 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "findOneSupplier", null);
+__decorate([
+    (0, common_1.UseGuards)(authentication_guard_1.AuthenticationGuard, (0, authorization_guard_1.AuthorizedGuard)([user_role_enum_1.Roles.ADMIN])),
+    (0, common_1.Get)('supplier-invoice/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], InventoryController.prototype, "findOneSupplierWithInvoices", null);
 __decorate([
     (0, common_1.UseGuards)(authentication_guard_1.AuthenticationGuard, (0, authorization_guard_1.AuthorizedGuard)([user_role_enum_1.Roles.ADMIN])),
     (0, common_1.Post)('supplier'),

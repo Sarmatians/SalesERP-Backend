@@ -73,6 +73,10 @@ export declare class InventoryController {
         };
     }>;
     findOneSupplier(id: string): Promise<Supplier>;
+    findOneSupplierWithInvoices(id: string): Promise<{
+        supplier: Partial<Supplier>;
+        itemsGroupedByInvoice: Record<string, Item[]>;
+    }>;
     createSupplier(createSupplierDto: CreateSupplierDto): Promise<Supplier>;
     updateSupplier(id: string, updateSupplierDto: UpdateSupplierDto): Promise<{
         success: boolean;

@@ -192,6 +192,42 @@ let InventoryService = class InventoryService {
             ],
         });
     }
+    async findOneSupplierWithSupllierInvoice(id) {
+        const supplier = await this.supplierRepository.findOne({
+            where: { id },
+            relations: [
+                'items',
+                'items.variations',
+                'items.variations.attributes',
+            ],
+        });
+        if (!supplier)
+            throw new Error('Supplier not found');
+        const sortedItems = [...supplier.items].sort((a, b) => {
+            const getTimeSafe = (d) => d instanceof Date ? d.getTime() : new Date(d).getTime();
+            const dateA = getTimeSafe(a.add_date ?? a.created ?? 0);
+            const dateB = getTimeSafe(b.add_date ?? b.created ?? 0);
+            return dateB - dateA;
+        });
+        const groupedItems = sortedItems.reduce((acc, item) => {
+            const key = item.Supplier_InvoiceNo || 'null';
+            if (!acc[key])
+                acc[key] = [];
+            acc[key].push(item);
+            return acc;
+        }, {});
+        const { id: supplierId, name, email, phone, address } = supplier;
+        return {
+            supplier: {
+                id: supplierId,
+                name,
+                email,
+                phone,
+                address,
+            },
+            itemsGroupedByInvoice: groupedItems,
+        };
+    }
     async createSupplier(createSupplierDto) {
         const supplier = new supplier_entity_1.Supplier();
         supplier.name = createSupplierDto.name;
@@ -681,6 +717,7 @@ let InventoryService = class InventoryService {
         item.images = createItemDto.images;
         item.is_variant = createItemDto.is_variant ?? false;
         item.add_date = createItemDto.add_date ?? null;
+        item.Supplier_InvoiceNo = createItemDto.Supplier_InvoiceNo ?? null;
         if (createItemDto.locationId) {
             const location = await this.locationRepository.findOne({ where: { id: createItemDto.locationId } });
             if (!location)
@@ -791,6 +828,9 @@ let InventoryService = class InventoryService {
                 item.images = dto.images;
             if (dto.is_variant !== undefined)
                 item.is_variant = dto.is_variant;
+            if (dto.Supplier_InvoiceNo !== undefined) {
+                item.Supplier_InvoiceNo = dto.Supplier_InvoiceNo;
+            }
             if (dto.is_active !== undefined) {
                 item.is_active = dto.is_active;
                 const variations = await this.itemVariationRepository.find({

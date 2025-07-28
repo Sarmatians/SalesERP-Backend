@@ -246,6 +246,54 @@ export class InventoryService {
       });
     }
 
+    // Single Supplier by Supplier Invoice
+    async findOneSupplierWithSupllierInvoice(id: number): Promise<{
+      supplier: Partial<Supplier>,
+      itemsGroupedByInvoice: Record<string, Item[]>
+    }> {
+      const supplier = await this.supplierRepository.findOne({
+        where: { id },
+        relations: [
+          'items',
+          'items.variations',
+          'items.variations.attributes',
+        ],
+      });
+
+      if (!supplier) throw new Error('Supplier not found');
+
+      const sortedItems = [...supplier.items].sort((a, b) => {
+        const getTimeSafe = (d: any) => d instanceof Date ? d.getTime() : new Date(d).getTime();
+        const dateA = getTimeSafe(a.add_date ?? a.created ?? 0);
+        const dateB = getTimeSafe(b.add_date ?? b.created ?? 0);
+        return dateB - dateA;
+      });
+
+      // Group by supplierInvoiceNo
+      const groupedItems = sortedItems.reduce((acc, item) => {
+        const key = item.Supplier_InvoiceNo || 'null';
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(item);
+        return acc;
+      }, {} as Record<string, Item[]>);
+
+      const { id: supplierId, name, email, phone, address } = supplier;
+
+      return {
+        supplier: {
+          id: supplierId,
+          name,
+          email,
+          phone,
+          address,
+        },
+        itemsGroupedByInvoice: groupedItems,
+      };
+    }
+
+
+
+
     // Create Supplier
     async createSupplier(createSupplierDto: CreateSupplierDto): Promise<Supplier> {
       const supplier = new Supplier();
@@ -837,6 +885,7 @@ export class InventoryService {
     item.images = createItemDto.images;
     item.is_variant = createItemDto.is_variant ?? false;
     item.add_date = createItemDto.add_date ?? null;
+    item.Supplier_InvoiceNo = createItemDto.Supplier_InvoiceNo ?? null;
 
 
     // Relations
@@ -964,6 +1013,10 @@ export class InventoryService {
       if (dto.discount !== undefined) item.discount = dto.discount;
       if (dto.images !== undefined) item.images = dto.images;
       if (dto.is_variant !== undefined) item.is_variant = dto.is_variant;
+      if (dto.Supplier_InvoiceNo !== undefined) {
+        item.Supplier_InvoiceNo = dto.Supplier_InvoiceNo;
+      }
+
       // if (dto.is_active !== undefined) item.is_active = dto.is_active;
 
       if (dto.is_active !== undefined) {

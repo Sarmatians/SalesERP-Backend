@@ -97,5 +97,9 @@ export class UpdateItemDto {
   @IsOptional()
   @Type(() => Date)
   add_date?: Date;
+
+  @IsOptional()
+  @IsString()
+  Supplier_InvoiceNo?: string;
   
 }

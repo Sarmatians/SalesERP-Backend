@@ -96,6 +96,12 @@ export class InventoryController {
     return this.inventoryService.findOneSupplier(+id);
   }
 
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
+  @Get('supplier-invoice/:id')
+  findOneSupplierWithInvoices(@Param('id') id: string): Promise<{supplier: Partial<Supplier>;itemsGroupedByInvoice: Record<string, Item[]>;}> {
+    return this.inventoryService.findOneSupplierWithSupllierInvoice(+id);
+  }
+
   @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
   @Post('supplier')
   createSupplier(@Body() createSupplierDto: CreateSupplierDto): Promise<Supplier> {

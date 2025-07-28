@@ -21,4 +21,5 @@ export declare class UpdateItemDto {
     is_variant?: boolean;
     is_active?: boolean;
     add_date?: Date;
+    Supplier_InvoiceNo?: string;
 }

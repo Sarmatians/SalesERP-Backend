@@ -87,6 +87,10 @@ export declare class InventoryService {
         };
     }>;
     findOneSupplier(id: number): Promise<Supplier>;
+    findOneSupplierWithSupllierInvoice(id: number): Promise<{
+        supplier: Partial<Supplier>;
+        itemsGroupedByInvoice: Record<string, Item[]>;
+    }>;
     createSupplier(createSupplierDto: CreateSupplierDto): Promise<Supplier>;
     updateSupplier(id: number, updateData: UpdateSupplierDto): Promise<{
         success: boolean;
