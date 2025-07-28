@@ -129,6 +129,10 @@ __decorate([
     (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
     __metadata("design:type", Date)
 ], Item.prototype, "add_date", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Item.prototype, "Supplier_InvoiceNo", void 0);
 exports.Item = Item = __decorate([
     (0, typeorm_1.Entity)()
 ], Item);

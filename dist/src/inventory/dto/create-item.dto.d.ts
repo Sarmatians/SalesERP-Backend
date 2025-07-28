@@ -20,4 +20,5 @@ export declare class CreateItemDto {
     relatedItemIds?: number[];
     is_variant?: boolean;
     add_date?: Date;
+    Supplier_InvoiceNo?: string;
 }

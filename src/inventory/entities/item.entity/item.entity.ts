@@ -100,6 +100,11 @@ export class Item {
   @Column({ type: 'timestamp', nullable: true })
   add_date?: Date;
 
+  @Column({ nullable: true })
+  Supplier_InvoiceNo?: string;
+
+
+
   // @BeforeInsert()
   // @BeforeUpdate()
   // generateSlugAndBarcode() {

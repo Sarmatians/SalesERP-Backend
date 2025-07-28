@@ -34,4 +34,5 @@ export declare class Item {
     is_variant?: boolean;
     is_active: boolean;
     add_date?: Date;
+    Supplier_InvoiceNo?: string;
 }
