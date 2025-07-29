@@ -43,31 +43,31 @@ export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
 
   // ############# Lot endpoints #############
-  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('lot')
   findAllLot(@Query() query: QueryInventoryDto) {
     return this.inventoryService.findAllLots(query);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('lot/:id')
   findOneLot(@Param('id') id: string): Promise<Lot> {
     return this.inventoryService.findOneLot(+id);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Post('lot')
   createLot(@Body() createLotDto: CreateLotDto): Promise<{ success: boolean; message: string; data: any }> {
     return this.inventoryService.createLot(createLotDto);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Put('lot/:id')
   updateLot(@Param('id') id: string, @Body() updateLotDto: UpdateLotDto): Promise<{ success: boolean; message: string; data: any }> {
     return this.inventoryService.updateLot(+id, updateLotDto);
   }
 
-  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN ]))
   @Delete('lot/:id')
   async removeLot(@Param('id') id: string, @Res() res: Response) {
     const result = await this.inventoryService.removeLot(+id);
@@ -84,31 +84,31 @@ export class InventoryController {
   }
 
   // ############# Supplier endpoints #############
-  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('supplier')
   findAllSupplier(@Query() query: QueryInventoryDto) {
     return this.inventoryService.findAllSuppliers(query);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('supplier/:id')
   findOneSupplier(@Param('id') id: string): Promise<Supplier> {
     return this.inventoryService.findOneSupplier(+id);
   }
 
-  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('supplier-invoice/:id')
   findOneSupplierWithInvoices(@Param('id') id: string): Promise<{supplier: Partial<Supplier>;itemsGroupedByInvoice: Record<string, Item[]>;}> {
     return this.inventoryService.findOneSupplierWithSupllierInvoice(+id);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Post('supplier')
   createSupplier(@Body() createSupplierDto: CreateSupplierDto): Promise<Supplier> {
     return this.inventoryService.createSupplier(createSupplierDto);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Put('supplier/:id')
   updateSupplier(
     @Param('id') id: string,
@@ -133,7 +133,7 @@ export class InventoryController {
     return res.status(200).json(result);
   }
 
-  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
     @Get('supplierAll')
     async findAllSupplierNoPagination(@Query('search') search?: string): Promise<Supplier[]> {
       return this.inventoryService.findAllSuppliersNoPagination(search);
@@ -143,25 +143,25 @@ export class InventoryController {
 
   // #############  location endpoints #############
 
-  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('location')
   findAllLocation(@Query() query: QueryInventoryDto) {
     return this.inventoryService.findAllLocation(query);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('location/:id')
   findOneLocation(@Param('id') id: string): Promise<Location> {
     return this.inventoryService.findOneLocation(+id);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Post('location')
   async createLocation(@Body() createLocationDto: CreateLocationDto): Promise<Location> {
     return await this.inventoryService.createLocation(createLocationDto);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Put('location/:id')
   updateLocation(@Param('id') id: string, @Body() UpdateLocationDto: UpdateLocationDto): Promise<void> {
     return this.inventoryService.updateLocation(+id, UpdateLocationDto);
@@ -186,25 +186,25 @@ export class InventoryController {
 
   // ############# Brand endpoints #############
 
-  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('brand')
   findAllBrand(@Query() query: QueryInventoryDto) {
     return this.inventoryService.findAllBrand(query);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('brand/:id')
   findOneBrand(@Param('id') id: string): Promise<Brand> {
     return this.inventoryService.findOneBrand(+id);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Post('brand')
   createBrand(@Body() createBrandDto: CreateBrandDto): Promise<Brand> {
     return this.inventoryService.createBrand(createBrandDto);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Put('brand/:id')
   updateBrand(@Param('id') id: string, @Body() UpdateBrandDto: UpdateBrandDto): Promise<void> {
     return this.inventoryService.updateBrand(+id, UpdateBrandDto);
@@ -229,25 +229,25 @@ export class InventoryController {
 
   // ##################  tag endpoints #################
 
-  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('tag')
   findAllTag(@Query() query: QueryInventoryDto) {
     return this.inventoryService.findAllTag(query);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('tag/:id')
   findOneTag(@Param('id') id: string): Promise<Tag> {
     return this.inventoryService.findOneTag(+id);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Post('tag')
   createTag(@Body() createTagDto: CreateTagDto): Promise<Tag> {
     return this.inventoryService.createTag(createTagDto);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Put('tag/:id')
   updateTag(@Param('id') id: string, @Body() updateTagDto: UpdateTagDto): Promise<void> {
     return this.inventoryService.updateTag(+id, updateTagDto);
@@ -271,25 +271,25 @@ export class InventoryController {
 
 
   // ################## Category endpoints ##################
-  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('categories')
   findAllCategories(@Query() query: QueryInventoryDto) {
     return this.inventoryService.findAllCategories(query);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('categories/:id')
   findOneCategory(@Param('id') id: string): Promise<Category> {
     return this.inventoryService.findOneCategory(+id);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Post('categories')
   createCategory(@Body() createCategoryDto: CreateCategoryDto): Promise<Category> {
     return this.inventoryService.createCategory(createCategoryDto);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Put('categories/:id')
   updateCategory(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto): Promise<void> {
     return this.inventoryService.updateCategory(+id, updateCategoryDto);
@@ -313,25 +313,25 @@ export class InventoryController {
 
 
   // ################## Attribute endpoints #################
-  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('attributes')
   findAllAttributes(@Query() query: QueryInventoryDto) {
     return this.inventoryService.findAllAttributes(query);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('attributes/:id')
   findOneAttribute(@Param('id') id: string): Promise<Attribute> {
     return this.inventoryService.findOneAttribute(+id);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Post('attributes')
   createAttribute(@Body() createAttributeDto: CreateAttributeDto): Promise<Attribute> {
     return this.inventoryService.createAttribute(createAttributeDto);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Put('attributes/:id')
   updateAttribute(
     @Param('id') id: string,
@@ -358,25 +358,25 @@ export class InventoryController {
 
 
   // ################### AttributeItem endpoints #################
-  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('attribute-items')
   findAllAttributeItems(@Query() query: QueryInventoryDto) {
     return this.inventoryService.findAllAttributeItems(query);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('attribute-items/:id')
   findOneAttributeItem(@Param('id') id: string): Promise<AttributeItem> {
     return this.inventoryService.findOneAttributeItem(+id);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Post('attribute-items')
   createAttributeItem(@Body() createAttributeItemDto: CreateAttributeItemDto): Promise<AttributeItem> {
     return this.inventoryService.createAttributeItem(createAttributeItemDto);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Put('attribute-items/:id')
   updateAttributeItem(@Param('id') id: string, @Body() updateAttributeItem: UpdateAttributeItemDto): Promise<void> {
     return this.inventoryService.updateAttributeItem(+id, updateAttributeItem);
@@ -401,25 +401,25 @@ export class InventoryController {
 
 
   // Item endpoints
-  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('items')
   findAllItems(@Query() query: QueryInventoryDto) {
     return this.inventoryService.findAllItems(query);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('items/:id')
   findOneItem(@Param('id') id: string): Promise<Item> {
     return this.inventoryService.findOneItem(+id);
   }
  
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Post('items')
   createItem(@Body() createItemDto: CreateItemDto): Promise<Item> {
     return this.inventoryService.createItem(createItemDto);
   }
 
-  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard,AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Put('items/:id')
   updateItem(@Param('id') id: string, @Body() updateItemDto: UpdateItemDto): Promise<void> {
     return this.inventoryService.updateItem(+id, updateItemDto);
@@ -445,25 +445,25 @@ export class InventoryController {
 
 
 // ItemVariation endpoints
-  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('item-variations')
   findAllItemVariations(@Query() query: QueryInventoryDto) {
     return this.inventoryService.findAllItemVariations(query);
   }
 
-  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('item-variations/:id')
   findOneItemVariation(@Param('id') id: string): Promise<ItemVariation> {
     return this.inventoryService.findOneItemVariation(+id);
   }
 
-  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Post('item-variations')
   createItemVariation(@Body() dto: CreateItemVariationDto): Promise<ItemVariation> {
     return this.inventoryService.createItemVariation(dto);
   }
 
-  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Put('item-variations/:id')
   updateItemVariation(@Param('id') id: string, @Body() dto: UpdateItemVariationDto): Promise<void> {
     return this.inventoryService.updateItemVariation(+id, dto);
