@@ -6,6 +6,7 @@ import { InventoryService } from './inventory.service';
 import { InventoryController } from './inventory.controller';
 import { Lot } from './entities/lot.entity/lot.entity';
 import { Supplier } from './entities/supplier.entity/supplier.entity';
+import { SupplierPayment } from './entities/supplier-payment.entity/supplier-payment.entity';
 import { Attribute } from './entities/attribute.entity/attribute.entity';
 import { AttributeItem } from './entities/attribute-item.entity/attribute-item.entity';
 import { Location } from './entities/location.entity/location.entity';
@@ -17,7 +18,7 @@ import { ItemVariation } from './entities/item-variation.entity/item-variation.e
 
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Supplier, Lot, Attribute, AttributeItem, Location, Brand, Tag, Category, ItemVariation, Item, ])],
+  imports: [TypeOrmModule.forFeature([Supplier, SupplierPayment, Lot, Attribute, AttributeItem, Location, Brand, Tag, Category, ItemVariation, Item, ])],
   controllers: [InventoryController],
   providers: [InventoryService],
 })
