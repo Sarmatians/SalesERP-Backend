@@ -266,20 +266,16 @@ export class InventoryService {
       });
 
       if (!supplier) throw new Error('Supplier not found');
-
-      // Fetch all payments for this supplier
       const payments = await this.supplierPaymentRepository.find({
         where: { supplier: { id } },
       });
 
-      // Create lookup for paid amounts per invoice
       const paidAmountByInvoice: Record<string, number> = {};
       for (const payment of payments) {
         const key = payment.supplierInvoiceNo || 'null';
         paidAmountByInvoice[key] = (paidAmountByInvoice[key] || 0) + Number(payment.paidAmount ?? 0);
       }
 
-      // Sort items by date
       const sortedItems = [...supplier.items].sort((a, b) => {
         const getTimeSafe = (d: any) => d instanceof Date ? d.getTime() : new Date(d).getTime();
         const dateA = getTimeSafe(a.add_date ?? a.created ?? 0);
@@ -287,7 +283,6 @@ export class InventoryService {
         return dateB - dateA;
       });
 
-      // Group and enrich
       const groupedItems = sortedItems.reduce((acc, item) => {
         const key = item.Supplier_InvoiceNo || 'null';
         if (!acc[key]) {
@@ -311,7 +306,6 @@ export class InventoryService {
         TotalDueAmount: number
       }>);
 
-      // Apply paidAmount & dueAmount to each group
       for (const invoiceNo in groupedItems) {
         const group = groupedItems[invoiceNo];
         group.TotalPaidAmount = paidAmountByInvoice[invoiceNo] || 0;
@@ -456,12 +450,10 @@ export class InventoryService {
         throw new Error(`Invoice number "${dto.supplierInvoiceNo}" not found for this supplier.`);
       }
 
-      // Optional: Prevent overpayment
       if (dto.paidAmount > group.TotalPurchaseAmount) {
         throw new Error(`Paid amount exceeds total purchase amount for invoice "${dto.supplierInvoiceNo}".`);
       }
 
-      // Create and save payment
       const payment = this.supplierPaymentRepository.create({
         paymentMethod: dto.paymentMethod,
         paidAmount: dto.paidAmount,
@@ -470,7 +462,6 @@ export class InventoryService {
         supplier,
       });
 
-      // Update supplier's paid and due balances
       supplier.paidAmount = Number(supplier.paidAmount ?? 0) + Number(dto.paidAmount);
       supplier.dueAmount = Number(supplier.totalAmount ?? 0) - supplier.paidAmount;
 
@@ -485,25 +476,78 @@ export class InventoryService {
         where: { id },
         relations: ['supplier'],
       });
+
       if (!payment) throw new Error(`SupplierPayment with ID ${id} not found`);
 
-      // Adjust supplier balances if paidAmount changed
-      if (updateData.paidAmount !== undefined) {
-        const oldPaidAmount = Number(payment.paidAmount);
-        const diff = Number(updateData.paidAmount) - oldPaidAmount;
+      const supplier = await this.supplierRepository.findOne({
+        where: { id: payment.supplier.id },
+        relations: ['items'],
+      });
 
-        payment.supplier.paidAmount = Number(payment.supplier.paidAmount ?? 0) + diff;
-        payment.supplier.dueAmount = Number(payment.supplier.totalAmount ?? 0) - payment.supplier.paidAmount;
+      if (!supplier) throw new Error('Supplier not found');
 
-        await this.supplierRepository.save(payment.supplier);
-        payment.paidAmount = updateData.paidAmount;
+      const oldPaidAmount = Number(payment.paidAmount ?? 0);
+      const oldInvoiceNo = payment.supplierInvoiceNo || 'null';
+      if (updateData.supplierInvoiceNo && updateData.supplierInvoiceNo !== oldInvoiceNo) {
+        throw new Error('Changing the invoice number is not allowed.');
       }
 
-      if (updateData.paymentMethod !== undefined) payment.paymentMethod = updateData.paymentMethod;
-      if (updateData.notes !== undefined) payment.notes = updateData.notes;
+      // Build grouped items for validation
+      const groupedItems = supplier.items.reduce((acc, item) => {
+        const key = item.Supplier_InvoiceNo || 'null';
+        if (!acc[key]) {
+          acc[key] = {
+            items: [],
+            TotalPurchaseAmount: 0,
+          };
+        }
+        acc[key].items.push(item);
+        acc[key].TotalPurchaseAmount += Number(item.purchasePrice ?? 0);
+        return acc;
+      }, {} as Record<string, { items: Item[]; TotalPurchaseAmount: number }>);
+
+      const newInvoiceNo = updateData.supplierInvoiceNo ?? payment.supplierInvoiceNo ?? 'null';
+      const invoiceGroup = groupedItems[newInvoiceNo];
+
+      if (!invoiceGroup) {
+        throw new Error(`Invoice number "${newInvoiceNo}" not found for this supplier.`);
+      }
+
+      const newPaidAmount = updateData.paidAmount ?? oldPaidAmount;
+      const otherPayments = await this.supplierPaymentRepository.find({
+        where: {
+          supplier: { id: supplier.id },
+          supplierInvoiceNo: newInvoiceNo,
+        },
+      });
+
+      const otherPaymentsTotal = otherPayments
+        .filter(p => p.id !== payment.id)
+        .reduce((sum, p) => sum + Number(p.paidAmount ?? 0), 0);
+
+      const updatedTotalPaid = otherPaymentsTotal + newPaidAmount;
+
+      if (updatedTotalPaid > invoiceGroup.TotalPurchaseAmount) {
+        throw new Error(`Total payments for invoice "${newInvoiceNo}" exceed the purchase amount.`);
+      }
+
+      // Update supplier paid/due amounts
+      const supplierOldPaid = Number(supplier.paidAmount ?? 0);
+      const paidDiff = newPaidAmount - oldPaidAmount;
+
+      supplier.paidAmount = supplierOldPaid + paidDiff;
+      supplier.dueAmount = Number(supplier.totalAmount ?? 0) - supplier.paidAmount;
+      await this.supplierRepository.save(supplier);
+
+      // Update payment
+      payment.paidAmount = newPaidAmount;
+      payment.paymentMethod = updateData.paymentMethod ?? payment.paymentMethod;
+      payment.notes = updateData.notes ?? payment.notes;
+      payment.supplierInvoiceNo = newInvoiceNo;
 
       return this.supplierPaymentRepository.save(payment);
     }
+
 
     // DELETE SUPPLIER PAYMENT
     async deleteSupplierPayment(id: number): Promise<{ success: boolean; message: string }> {
@@ -514,7 +558,7 @@ export class InventoryService {
 
       if (!payment) throw new Error(`SupplierPayment with ID ${id} not found`);
 
-      // Reverse supplier balance
+      // Reversing payment
       payment.supplier.paidAmount = Number(payment.supplier.paidAmount ?? 0) - Number(payment.paidAmount ?? 0);
       payment.supplier.dueAmount = Number(payment.supplier.totalAmount ?? 0) - payment.supplier.paidAmount;
       await this.supplierRepository.save(payment.supplier);
