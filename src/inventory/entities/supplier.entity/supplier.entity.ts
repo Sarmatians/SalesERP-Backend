@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Item } from '../item.entity/item.entity';
+import { SupplierPayment } from '../supplier-payment.entity/supplier-payment.entity'; 
 
 @Entity()
 export class Supplier {
@@ -60,6 +61,9 @@ export class Supplier {
 
   @OneToMany(() => Item, item => item.supplier)
   items: Item[];
+
+  @OneToMany(() => SupplierPayment, payment => payment.supplier)
+  payments: SupplierPayment[];
 
 }
 
