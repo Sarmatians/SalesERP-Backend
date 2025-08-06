@@ -7,6 +7,8 @@ import { Lot } from './entities/lot.entity/lot.entity';
 import { CreateLotDto } from './dto/create-lot.dto';
 import { UpdateLotDto } from './dto/update-lot.dto';
 import { Supplier } from './entities/supplier.entity/supplier.entity';
+import { SupplierPayment } from './entities/supplier-payment.entity/supplier-payment.entity';
+import { CreateSupplierPaymentDto } from './dto/create-supplier-payment.dto';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
 import { Attribute } from './entities/attribute.entity/attribute.entity';
@@ -98,7 +100,10 @@ export class InventoryController {
 
   @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER,]))
   @Get('supplier-invoice/:id')
-  findOneSupplierWithInvoices(@Param('id') id: string): Promise<{supplier: Partial<Supplier>;itemsGroupedByInvoice: Record<string, Item[]>;}> {
+  findOneSupplierWithInvoices(@Param('id') id: string): Promise<{
+    supplier: Partial<Supplier>;
+    itemsGroupedByInvoice: Record<string, { items: Item[]; TotalPurchaseAmount: number }>;
+  }> {
     return this.inventoryService.findOneSupplierWithSupllierInvoice(+id);
   }
 
@@ -139,7 +144,46 @@ export class InventoryController {
       return this.inventoryService.findAllSuppliersNoPagination(search);
     }
 
+  // ############# Supplier Payment endpoints #############
+  
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER]))
+  @Get('supplier-payment')
+  getAllSupplierPayments(): Promise<{ success: boolean; message: string; data: SupplierPayment[] }> {
+    return this.inventoryService.getAllSupplierPayments();
+  }
+  
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER]))
+  @Get('supplier-payment/:id')
+  getSupplierPayment(@Param('id') id: string): Promise<SupplierPayment> {
+    return this.inventoryService.getSupplierPaymentById(+id);
+  }
+  
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER]))
+    @Post('supplier-payment')
+    createSupplierPayment(@Body() dto: CreateSupplierPaymentDto): Promise<SupplierPayment> {
+      return this.inventoryService.createSupplierPayment(dto);
+    }
+    
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER]))
+    @Put('supplier-payment/:id')
+    updateSupplierPayment(
+      @Param('id') id: string,
+      @Body() updateDto: Partial<CreateSupplierPaymentDto>
+    ): Promise<SupplierPayment> {
+      return this.inventoryService.updateSupplierPayment(+id, updateDto);
+    }
 
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN]))
+    @Delete('supplier-payment/:id')
+    async deleteSupplierPayment(@Param('id') id: string, @Res() res: Response) {
+      const result = await this.inventoryService.deleteSupplierPayment(+id);
+
+      if (!result.success) {
+        return res.status(404).json(result);
+      }
+
+      return res.status(200).json(result);
+    }
 
   // #############  location endpoints #############
 
@@ -484,6 +528,15 @@ export class InventoryController {
 
     return res.status(200).json(result);
   }
+
+
+
+
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER]))
+    @Get('items/:id/entries')
+    async getItemEntries(@Param('id') id: string) {
+      return this.inventoryService.getItemEntries(+id);
+    }
 
 
 

@@ -45,3 +45,5 @@ npm run start 3333
 <!-- For Future Migrations -->
 npm run typeorm migration:generate -- -n AddLotEntityAndRelation
 npm run typeorm migration:run
+npm run migration:create db/migrations/CreateInitialSchema
+

@@ -7,6 +7,7 @@ import { Lot } from './entities/lot.entity/lot.entity';
 import { CreateLotDto } from './dto/create-lot.dto';
 import { UpdateLotDto } from './dto/update-lot.dto';
 import { Supplier } from './entities/supplier.entity/supplier.entity';
+import { SupplierPayment } from './entities/supplier-payment.entity/supplier-payment.entity';
 import { Attribute } from './entities/attribute.entity/attribute.entity';
 import { AttributeItem } from './entities/attribute-item.entity/attribute-item.entity';
 import { Location } from './entities/location.entity/location.entity';
@@ -15,7 +16,9 @@ import { Brand } from './entities/brand.entity/brand.entity';
 import { Tag } from './entities/tag.entity/tag.entity';
 import { Item } from './entities/item.entity/item.entity';
 import { ItemVariation } from './entities/item-variation.entity/item-variation.entity';
+import { ItemEntry } from './entities/item-entry.entity/item-entry.entity';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
+import { CreateSupplierPaymentDto } from './dto/create-supplier-payment.dto';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -33,6 +36,8 @@ import { UpdateLocationDto } from './dto/updated-location.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { UpdateItemDto } from './dto/updated-item.dto';
 import { UpdateItemVariationDto } from './dto/update-item-variation.dto'; 
+// import { CreateItemEntryDto } from './dto/create-item-entry.dto';
+// import { UpdateItemEntryDto } from './dto/create-item-entry.dto';
 import { QueryInventoryDto } from './dto/PaginationFilter/query-options.dto';
 
 
@@ -43,6 +48,8 @@ export class InventoryService {
     private lotRepository: Repository<Lot>,
     @InjectRepository(Supplier)
     private supplierRepository: Repository<Supplier>,
+    @InjectRepository(SupplierPayment)
+    private supplierPaymentRepository: Repository<SupplierPayment>,
     @InjectRepository(Attribute)
     private attributeRepository: Repository<Attribute>,
     @InjectRepository(AttributeItem)
@@ -59,6 +66,8 @@ export class InventoryService {
     private itemRepository: Repository<Item>,
     @InjectRepository(ItemVariation)
     private itemVariationRepository: Repository<ItemVariation>,
+    @InjectRepository(ItemEntry)
+    private itemEntryRepository: Repository<ItemEntry>,
   ) {}
 
 
@@ -249,18 +258,28 @@ export class InventoryService {
     // Single Supplier by Supplier Invoice
     async findOneSupplierWithSupllierInvoice(id: number): Promise<{
       supplier: Partial<Supplier>,
-      itemsGroupedByInvoice: Record<string, Item[]>
+      itemsGroupedByInvoice: Record<string, {
+        items: Item[],
+        TotalPurchaseAmount: number,
+        TotalPaidAmount: number,
+        TotalDueAmount: number
+      }>
     }> {
       const supplier = await this.supplierRepository.findOne({
         where: { id },
-        relations: [
-          'items',
-          'items.variations',
-          'items.variations.attributes',
-        ],
+        relations: ['items', 'items.variations', 'items.variations.attributes'],
       });
 
       if (!supplier) throw new Error('Supplier not found');
+      const payments = await this.supplierPaymentRepository.find({
+        where: { supplier: { id } },
+      });
+
+      const paidAmountByInvoice: Record<string, number> = {};
+      for (const payment of payments) {
+        const key = payment.supplierInvoiceNo || 'null';
+        paidAmountByInvoice[key] = (paidAmountByInvoice[key] || 0) + Number(payment.paidAmount ?? 0);
+      }
 
       const sortedItems = [...supplier.items].sort((a, b) => {
         const getTimeSafe = (d: any) => d instanceof Date ? d.getTime() : new Date(d).getTime();
@@ -269,15 +288,36 @@ export class InventoryService {
         return dateB - dateA;
       });
 
-      // Group by supplierInvoiceNo
       const groupedItems = sortedItems.reduce((acc, item) => {
         const key = item.Supplier_InvoiceNo || 'null';
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(item);
-        return acc;
-      }, {} as Record<string, Item[]>);
+        if (!acc[key]) {
+          acc[key] = {
+            items: [],
+            TotalPurchaseAmount: 0,
+            TotalPaidAmount: 0,
+            TotalDueAmount: 0,
+          };
+        }
 
-      const { id: supplierId, name, email, phone, address } = supplier;
+        const purchasePrice = Number(item.purchasePrice ?? 0);
+        acc[key].items.push(item);
+        acc[key].TotalPurchaseAmount += purchasePrice;
+
+        return acc;
+      }, {} as Record<string, {
+        items: Item[],
+        TotalPurchaseAmount: number,
+        TotalPaidAmount: number,
+        TotalDueAmount: number
+      }>);
+
+      for (const invoiceNo in groupedItems) {
+        const group = groupedItems[invoiceNo];
+        group.TotalPaidAmount = paidAmountByInvoice[invoiceNo] || 0;
+        group.TotalDueAmount = group.TotalPurchaseAmount - group.TotalPaidAmount;
+      }
+
+      const { id: supplierId, name, email, phone, address, account_balance, totalAmount, dueAmount, paidAmount } = supplier;
 
       return {
         supplier: {
@@ -286,12 +326,14 @@ export class InventoryService {
           email,
           phone,
           address,
+          account_balance,
+          totalAmount,
+          dueAmount,
+          paidAmount,
         },
         itemsGroupedByInvoice: groupedItems,
       };
     }
-
-
 
 
     // Create Supplier
@@ -357,6 +399,180 @@ export class InventoryService {
         order: { id: 'DESC' },
       });
     }
+
+    //  #################### Supplier Payment methods ####################
+
+    // GET ALL SUPPLIER PAYMENT
+    async getAllSupplierPayments(): Promise<{ success: boolean; message: string; data: SupplierPayment[] }> {
+      try {
+        const payments = await this.supplierPaymentRepository.find({
+          relations: ['supplier'], 
+          order: { paidAt: 'DESC' },
+        });
+
+        return this.response(true, 'Supplier payments retrieved successfully.', payments);
+      } catch (error) {
+        console.error('[InventoryService] Failed to fetch supplier payments:', error.message);
+        return this.response(false, 'Failed to retrieve supplier payments.', []);
+      }
+    }
+
+    // GET SINGLE SUPPLIER PAYMENT BY ID
+    async getSupplierPaymentById(id: number): Promise<SupplierPayment> {
+      const payment = await this.supplierPaymentRepository.findOne({
+        where: { id },
+        relations: ['supplier'],
+      });
+
+      if (!payment) throw new Error(`SupplierPayment with ID ${id} not found`);
+      return payment;
+    }
+
+    // CREATE SUPPLIER PAYMENT 
+    async createSupplierPayment(dto: CreateSupplierPaymentDto): Promise<SupplierPayment> {
+      const supplier = await this.supplierRepository.findOne({
+        where: { id: dto.supplierId },
+        relations: ['items'],
+      });
+
+      if (!supplier) throw new Error('Supplier not found');
+
+      const groupedItems = supplier.items.reduce((acc, item) => {
+        const key = item.Supplier_InvoiceNo || 'null';
+        if (!acc[key]) {
+          acc[key] = {
+            items: [],
+            TotalPurchaseAmount: 0,
+          };
+        }
+        acc[key].items.push(item);
+        acc[key].TotalPurchaseAmount += Number(item.purchasePrice ?? 0);
+        return acc;
+      }, {} as Record<string, { items: Item[], TotalPurchaseAmount: number }>);
+
+      const group = groupedItems[dto.supplierInvoiceNo];
+      if (!group) {
+        throw new Error(`Invoice number "${dto.supplierInvoiceNo}" not found for this supplier.`);
+      }
+
+      if (dto.paidAmount > group.TotalPurchaseAmount) {
+        throw new Error(`Paid amount exceeds total purchase amount for invoice "${dto.supplierInvoiceNo}".`);
+      }
+
+      const payment = this.supplierPaymentRepository.create({
+        paymentMethod: dto.paymentMethod,
+        paidAmount: dto.paidAmount,
+        notes: dto.notes ?? '',
+        supplierInvoiceNo: dto.supplierInvoiceNo,
+        supplier,
+      });
+
+      supplier.paidAmount = Number(supplier.paidAmount ?? 0) + Number(dto.paidAmount);
+      supplier.dueAmount = Number(supplier.totalAmount ?? 0) - supplier.paidAmount;
+
+      await this.supplierRepository.save(supplier);
+      return this.supplierPaymentRepository.save(payment);
+    }
+
+
+    // UPDATE SUPPLIER PAYMENT
+    async updateSupplierPayment(id: number, updateData: Partial<CreateSupplierPaymentDto>): Promise<SupplierPayment> {
+      const payment = await this.supplierPaymentRepository.findOne({
+        where: { id },
+        relations: ['supplier'],
+      });
+
+      if (!payment) throw new Error(`SupplierPayment with ID ${id} not found`);
+
+      const supplier = await this.supplierRepository.findOne({
+        where: { id: payment.supplier.id },
+        relations: ['items'],
+      });
+
+      if (!supplier) throw new Error('Supplier not found');
+
+      const oldPaidAmount = Number(payment.paidAmount ?? 0);
+      const oldInvoiceNo = payment.supplierInvoiceNo || 'null';
+      if (updateData.supplierInvoiceNo && updateData.supplierInvoiceNo !== oldInvoiceNo) {
+        throw new Error('Changing the invoice number is not allowed.');
+      }
+
+      // Build grouped items for validation
+      const groupedItems = supplier.items.reduce((acc, item) => {
+        const key = item.Supplier_InvoiceNo || 'null';
+        if (!acc[key]) {
+          acc[key] = {
+            items: [],
+            TotalPurchaseAmount: 0,
+          };
+        }
+        acc[key].items.push(item);
+        acc[key].TotalPurchaseAmount += Number(item.purchasePrice ?? 0);
+        return acc;
+      }, {} as Record<string, { items: Item[]; TotalPurchaseAmount: number }>);
+
+      const newInvoiceNo = updateData.supplierInvoiceNo ?? payment.supplierInvoiceNo ?? 'null';
+      const invoiceGroup = groupedItems[newInvoiceNo];
+
+      if (!invoiceGroup) {
+        throw new Error(`Invoice number "${newInvoiceNo}" not found for this supplier.`);
+      }
+
+      const newPaidAmount = updateData.paidAmount ?? oldPaidAmount;
+      const otherPayments = await this.supplierPaymentRepository.find({
+        where: {
+          supplier: { id: supplier.id },
+          supplierInvoiceNo: newInvoiceNo,
+        },
+      });
+
+      const otherPaymentsTotal = otherPayments
+        .filter(p => p.id !== payment.id)
+        .reduce((sum, p) => sum + Number(p.paidAmount ?? 0), 0);
+
+      const updatedTotalPaid = otherPaymentsTotal + newPaidAmount;
+
+      if (updatedTotalPaid > invoiceGroup.TotalPurchaseAmount) {
+        throw new Error(`Total payments for invoice "${newInvoiceNo}" exceed the purchase amount.`);
+      }
+
+      // Update supplier paid/due amounts
+      const supplierOldPaid = Number(supplier.paidAmount ?? 0);
+      const paidDiff = newPaidAmount - oldPaidAmount;
+
+      supplier.paidAmount = supplierOldPaid + paidDiff;
+      supplier.dueAmount = Number(supplier.totalAmount ?? 0) - supplier.paidAmount;
+      await this.supplierRepository.save(supplier);
+
+      // Update payment
+      payment.paidAmount = newPaidAmount;
+      payment.paymentMethod = updateData.paymentMethod ?? payment.paymentMethod;
+      payment.notes = updateData.notes ?? payment.notes;
+      payment.supplierInvoiceNo = newInvoiceNo;
+
+      return this.supplierPaymentRepository.save(payment);
+    }
+
+
+    // DELETE SUPPLIER PAYMENT
+    async deleteSupplierPayment(id: number): Promise<{ success: boolean; message: string }> {
+      const payment = await this.supplierPaymentRepository.findOne({
+        where: { id },
+        relations: ['supplier'],
+      });
+
+      if (!payment) throw new Error(`SupplierPayment with ID ${id} not found`);
+
+      // Reversing payment
+      payment.supplier.paidAmount = Number(payment.supplier.paidAmount ?? 0) - Number(payment.paidAmount ?? 0);
+      payment.supplier.dueAmount = Number(payment.supplier.totalAmount ?? 0) - payment.supplier.paidAmount;
+      await this.supplierRepository.save(payment.supplier);
+
+      await this.supplierPaymentRepository.remove(payment);
+      return { success: true, message: 'Supplier payment deleted and supplier balance adjusted.' };
+    }
+
+
 
     //  #################### Location methods ####################
 
@@ -944,7 +1160,7 @@ export class InventoryService {
     const savedItem = await this.itemRepository.save(item);
 
     // Generate and set barcode
-    savedItem.barcode = (savedItem.lot.name + savedItem.id + savedItem.sku).toString();
+    savedItem.barcode = (savedItem.id + savedItem.lot.name + savedItem.sku).toString();
     await this.itemRepository.save(savedItem);
 
     // Create default ItemVariation if is_variant is false
@@ -968,6 +1184,7 @@ export class InventoryService {
     }
 
     // return savedItem;
+    await this.logItemEntry(savedItem, 'created', savedItem.quantity ?? 0);
 
     const itemWithRelations = await this.itemRepository.findOne({
       where: { id: savedItem.id },
@@ -1000,6 +1217,8 @@ export class InventoryService {
         return this.buildResponse('failed', 'Item not found');
       }
 
+      const oldQuantity = item.quantity ?? 0;
+
       item.name = dto.name;
 
       if (dto.sku !== undefined) item.sku = dto.sku;
@@ -1007,7 +1226,20 @@ export class InventoryService {
       if (dto.size !== undefined) item.size = dto.size;
       if (dto.barcode !== undefined) item.barcode = dto.barcode;
       if (dto.quantity !== undefined) item.quantity = dto.quantity;
-      if (dto.purchasePrice !== undefined) item.purchasePrice = dto.purchasePrice;
+
+      if (dto.purchasePrice !== undefined) {
+        const oldPrice = item.purchasePrice ?? 0;
+        const newPrice = dto.purchasePrice ?? 0;
+        item.purchasePrice = newPrice;
+        if (item.supplier) {
+          const supplier = await this.supplierRepository.findOne({ where: { id: item.supplier.id } });
+          if (supplier) {
+            supplier.totalAmount = Number(supplier.totalAmount ?? 0) + (Number(newPrice) - Number(oldPrice));
+            await this.supplierRepository.save(supplier);
+          }
+        }
+      }
+
       if (dto.sellingPrice !== undefined) item.sellingPrice = dto.sellingPrice;
       if (dto.discountPrice !== undefined) item.discountPrice = dto.discountPrice;
       if (dto.discount !== undefined) item.discount = dto.discount;
@@ -1016,8 +1248,6 @@ export class InventoryService {
       if (dto.Supplier_InvoiceNo !== undefined) {
         item.Supplier_InvoiceNo = dto.Supplier_InvoiceNo;
       }
-
-      // if (dto.is_active !== undefined) item.is_active = dto.is_active;
 
       if (dto.is_active !== undefined) {
         item.is_active = dto.is_active;
@@ -1031,7 +1261,7 @@ export class InventoryService {
 
         await this.itemVariationRepository.save(variations);
       }
-      
+
       if (dto.locationId !== undefined) {
         const location = await this.locationRepository.findOne({ where: { id: dto.locationId } });
         if (!location) throw new Error('Location not found');
@@ -1049,12 +1279,31 @@ export class InventoryService {
       }
 
       if (dto.supplierId !== undefined) {
+        const previousSupplier = item.supplier;
+
         if (dto.supplierId === null) {
+          if (previousSupplier && item.purchasePrice) {
+            previousSupplier.totalAmount = Number(previousSupplier.totalAmount ?? 0) - Number(item.purchasePrice ?? 0);
+            await this.supplierRepository.save(previousSupplier);
+          }
           item.supplier = null;
         } else {
-          const supplier = await this.supplierRepository.findOne({ where: { id: dto.supplierId } });
-          if (!supplier) throw new Error('Supplier not found');
-          item.supplier = supplier;
+          const newSupplier = await this.supplierRepository.findOne({ where: { id: dto.supplierId } });
+          if (!newSupplier) throw new Error('Supplier not found');
+
+          if (!previousSupplier || previousSupplier.id !== newSupplier.id) {
+            if (previousSupplier && item.purchasePrice) {
+              previousSupplier.totalAmount = Number(previousSupplier.totalAmount ?? 0) - Number(item.purchasePrice ?? 0);
+              await this.supplierRepository.save(previousSupplier);
+            }
+
+            if (item.purchasePrice) {
+              newSupplier.totalAmount = Number(newSupplier.totalAmount ?? 0) + Number(item.purchasePrice ?? 0);
+              await this.supplierRepository.save(newSupplier);
+            }
+
+            item.supplier = newSupplier;
+          }
         }
       }
 
@@ -1087,6 +1336,19 @@ export class InventoryService {
 
       await this.itemRepository.save(item);
 
+      // Log ItemEntry only if quantity is updated
+      if (dto.quantity !== undefined && dto.quantity !== oldQuantity) {
+        const createdEntry = await this.itemEntryRepository.findOne({
+          where: { item: { id }, action: 'created' },
+          order: { createdAt: 'ASC' },
+        });
+
+        const createdQuantity = createdEntry?.createdQuantity ?? 0;
+        const quantityChanged = dto.quantity - oldQuantity;
+
+        await this.logItemEntry(item, 'updated', quantityChanged, createdQuantity);
+      }
+
       if (item.is_variant) {
         const variations = await this.itemVariationRepository.find({ where: { item: { id: item.id } } });
         item.quantity = variations.reduce((sum, v) => sum + (v.quantity ?? 0), 0);
@@ -1099,6 +1361,7 @@ export class InventoryService {
       return this.buildResponse('error', `Unexpected error occurred while updating item: ${error.message}`);
     }
   }
+
 
   // Delete Item
   async removeItem(id: number) {
@@ -1184,10 +1447,15 @@ export class InventoryService {
 
   // Create Variations
   async createItemVariation(dto: CreateItemVariationDto): Promise<ItemVariation> {
-    const item = await this.itemRepository.findOne({ where: { id: dto.itemId }, relations: ['lot'], });
+    const item = await this.itemRepository.findOne({
+      where: { id: dto.itemId },
+      relations: ['lot'],
+    });
     if (!item) throw new Error('Item not found');
 
-    const location = await this.locationRepository.findOne({ where: { id: dto.locationId } });
+    const location = await this.locationRepository.findOne({
+      where: { id: dto.locationId },
+    });
     if (!location) throw new Error('Location not found');
 
     const attributes = await this.attributeItemRepository.findByIds(dto.attributeItemIds || []);
@@ -1203,17 +1471,30 @@ export class InventoryService {
     itemVariation.sellingPrice = dto.sellingPrice ?? item.sellingPrice ?? 0;
     itemVariation.discountPrice = dto.discountPrice ?? 0;
     itemVariation.discount = dto.discount ?? 0;
-    itemVariation.images = dto.images ?? []; 
-    // itemVariation.barcode = dto.barcode || itemVariation.generateBarcode(item.id, attributes);
+    itemVariation.images = dto.images ?? [];
     itemVariation.barcode = dto.barcode || itemVariation.generateBarcode(item, attributes);
 
     const savedVariation = await this.itemVariationRepository.save(itemVariation);
 
-    // Recalculate item.quantity if it's a variant item
-    if (item.is_variant) {
-      const variations = await this.itemVariationRepository.find({ where: { item: { id: item.id } } });
-      item.quantity = variations.reduce((sum, v) => sum + (v.quantity ?? 0), 0);
+    // Recalculate and sync item.quantity from variations
+    const oldQuantity = item.quantity ?? 0;
+    const variations = await this.itemVariationRepository.find({ where: { item: { id: item.id } } });
+    const newQuantity = variations.reduce((sum, v) => sum + (v.quantity ?? 0), 0);
+
+    if (newQuantity !== oldQuantity) {
+      item.quantity = newQuantity;
       await this.itemRepository.save(item);
+
+      // Log entry
+      const createdEntry = await this.itemEntryRepository.findOne({
+        where: { item: { id: item.id }, action: 'created' },
+        order: { createdAt: 'ASC' },
+      });
+
+      const createdQuantity = createdEntry?.createdQuantity ?? 0;
+      const quantityChanged = newQuantity - oldQuantity;
+
+      await this.logItemEntry(item, 'updated', quantityChanged, createdQuantity);
     }
 
     return savedVariation;
@@ -1257,17 +1538,32 @@ export class InventoryService {
     if (dto.discountPrice !== undefined) itemVariation.discountPrice = dto.discountPrice;
     if (dto.discount !== undefined) itemVariation.discount = dto.discount;
     if (dto.barcode !== undefined) itemVariation.barcode = dto.barcode;
-    if (dto.images !== undefined) itemVariation.images = dto.images; 
+    if (dto.images !== undefined) itemVariation.images = dto.images;
 
     await this.itemVariationRepository.save(itemVariation);
 
-    // Recalculate item.quantity if it's a variant item
-    if (item.is_variant) {
-      const variations = await this.itemVariationRepository.find({ where: { item: { id: item.id } } });
-      item.quantity = variations.reduce((sum, v) => sum + (v.quantity ?? 0), 0);
+    // Recalculate and sync item.quantity from variations
+    const oldQuantity = item.quantity ?? 0;
+    const variations = await this.itemVariationRepository.find({ where: { item: { id: item.id } } });
+    const newQuantity = variations.reduce((sum, v) => sum + (v.quantity ?? 0), 0);
+
+    if (newQuantity !== oldQuantity) {
+      item.quantity = newQuantity;
       await this.itemRepository.save(item);
+
+      // Log entry
+      const createdEntry = await this.itemEntryRepository.findOne({
+        where: { item: { id: item.id }, action: 'created' },
+        order: { createdAt: 'ASC' },
+      });
+
+      const createdQuantity = createdEntry?.createdQuantity ?? 0;
+      const quantityChanged = newQuantity - oldQuantity;
+
+      await this.logItemEntry(item, 'updated', quantityChanged, createdQuantity);
     }
   }
+
 
   // Delete Variations
   async removeItemVariation(id: number) {
@@ -1293,6 +1589,31 @@ export class InventoryService {
       return this.handleDeleteError(error, 'Item Variation');
     }
   }
+
+  // #################### Item Entry Log methods ####################
+  // Create
+  async logItemEntry(item: Item, action: 'created' | 'updated', quantityChanged: number = 0, createdQuantity: number = 0): Promise<void> {
+    const itemEntry = new ItemEntry();
+    itemEntry.item = item;
+    itemEntry.action = action;
+    itemEntry.createdQuantity = action === 'created' ? item.quantity ?? 0 : createdQuantity;
+    itemEntry.quantityChanged = action === 'updated' ? quantityChanged : 0;
+    itemEntry.currentQuantity = item.quantity ?? 0;
+
+    await this.itemEntryRepository.save(itemEntry);
+  }
+
+
+async getItemEntries(itemId: number): Promise<ItemEntry[]> {
+  const item = await this.itemRepository.findOne({ where: { id: itemId } });
+  if (!item) throw new Error('Item not found');
+
+  return this.itemEntryRepository.find({
+    where: { item: { id: itemId } },
+    order: { createdAt: 'DESC' },
+  });
+}
+
 
 
 
