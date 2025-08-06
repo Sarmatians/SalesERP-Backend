@@ -15,10 +15,12 @@ import { Brand } from './entities/brand.entity/brand.entity';
 import { Tag } from './entities/tag.entity/tag.entity';
 import { Item } from './entities/item.entity/item.entity';
 import { ItemVariation } from './entities/item-variation.entity/item-variation.entity';
+import { ItemEntry } from './entities/item-entry.entity/item-entry.entity';
+
 
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Supplier, SupplierPayment, Lot, Attribute, AttributeItem, Location, Brand, Tag, Category, ItemVariation, Item, ])],
+  imports: [TypeOrmModule.forFeature([Supplier, SupplierPayment, Lot, Attribute, AttributeItem, Location, Brand, Tag, Category, ItemVariation, Item, ItemEntry])],
   controllers: [InventoryController],
   providers: [InventoryService],
 })

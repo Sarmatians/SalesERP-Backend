@@ -532,4 +532,13 @@ export class InventoryController {
 
 
 
+  @UseGuards(AuthenticationGuard, AuthorizedGuard([Roles.ADMIN, Roles.MANAGER]))
+    @Get('items/:id/entries')
+    async getItemEntries(@Param('id') id: string) {
+      return this.inventoryService.getItemEntries(+id);
+    }
+
+
+
+
 }
