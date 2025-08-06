@@ -1155,7 +1155,7 @@ export class InventoryService {
     const savedItem = await this.itemRepository.save(item);
 
     // Generate and set barcode
-    savedItem.barcode = (savedItem.lot.name + savedItem.id + savedItem.sku).toString();
+    savedItem.barcode = (savedItem.id + savedItem.lot.name + savedItem.sku).toString();
     await this.itemRepository.save(savedItem);
 
     // Create default ItemVariation if is_variant is false
